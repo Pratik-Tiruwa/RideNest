@@ -1,9 +1,9 @@
 import React from 'react'
 
-const VehicleSlider = () => {
+const Navbar = () => {
   return (
     <div></div>
   )
 }
 
-export default VehicleSlider
+export default Navbar

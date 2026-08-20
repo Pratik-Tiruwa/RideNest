@@ -7,7 +7,7 @@ type propType={
 
 const AuthModel = ({isOpen, onClose}:propType) => {
   return (
-    <div>AuthModel</div>
+    <div></div>
   )
 }
 
