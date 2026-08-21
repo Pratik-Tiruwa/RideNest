@@ -1,6 +1,10 @@
 "use client";
 import React from "react";
 import { motion } from "motion/react";
+import { Bike } from "lucide-react";
+import {Car} from "lucide-react"
+import {Bus} from "lucide-react"
+import {Truck} from "lucide-react"
 
 const HeroSection = () => {
   return (
@@ -29,6 +33,28 @@ const HeroSection = () => {
         >
           From daily Rides to heavy transport - all in one platform
         </motion.p>
+
+
+        <motion.div
+          initial = {{opacity : 0}}
+          animate = {{opacity : 1}}
+          transition= {{delay : 0.6}}
+          className="mt-8 flex gap-8 text-gray-300"
+        >
+        <Bike size={30} />
+        <Car size={30} />
+        <Bus size={30} />
+        <Truck size={30} />
+        </motion.div>
+
+        <motion.button
+          whileHover = {{scale:1.05}}
+          whileTap = {{scale:0.95}}
+          className=" mt-12 px-10 py-4 bg-white text-black rounded-full font-semibold shadow-xl"
+        >
+          Book Now
+        </motion.button>
+
       </div>
     </div>
   );
