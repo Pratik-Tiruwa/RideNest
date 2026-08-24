@@ -6,7 +6,7 @@ import AuthModel from './AuthModel'
 
 const PublicHome = () => {
 
-  const [authOpen, setAuthOpen] = useState(false)
+  const [authOpen, setAuthOpen] = useState(true)
 
   return (
     <> 
