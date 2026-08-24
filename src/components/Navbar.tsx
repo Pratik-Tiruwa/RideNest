@@ -22,9 +22,10 @@ function Navbar() {
       shadow-[0_15px_50px_rgba(0,0,0,0.7)] py-3`}
     >
       <div className='max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between'>
+
         <Image src={"/logo.png"} alt='logo' width={44} height={44} />
 
-        <div>
+        <div className='hidden md:flex items-center gap-10'> 
 
           {Nav_items.map((i, index) => {
             let href;
@@ -44,6 +45,10 @@ function Navbar() {
           })}
 
         </div>
+
+        <button className='px-4 py-1.5 rounded-full bg-white text-black text-sm'>
+          Login
+        </button>
 
       </div>
 
