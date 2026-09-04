@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { motion, useScroll } from 'motion/react'
+import { AnimatePresence, motion, useScroll } from 'motion/react'
 import { X } from 'lucide-react'
 import Image from 'next/image'
 import { Mail } from 'lucide-react'
@@ -19,12 +19,13 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
   const [step, setStep] = useState<setStep>('login')
 
   return (
-    <>
+    <AnimatePresence>
       {isOpen && (
         <>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            exit={{opacity: 0}}
             className='fixed inset-0 z-[90] bg-black/80 backdrop-blur-md'
           >
 
@@ -32,6 +33,7 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
               initial={{ opacity: 0, scale: 0.95, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
+              exit={{ opacity: 0, scale: 0.95, y: 40}}
               className='fixed inset-0 z-[100] flex items-center justify-center px-4'
             >
 
@@ -128,7 +130,7 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
           </motion.div>
         </>
       )}
-    </>
+    </AnimatePresence>
 
   )
 }
