@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import Image from 'next/image'
 import { Mail } from 'lucide-react'
 import { Lock } from 'lucide-react'
+import { User } from 'lucide-react'
 
 type propType = {
   isOpen: boolean,
@@ -81,7 +82,39 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
                         <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition'>Login</button>
 
                       </div>
-                     
+                      <p className='mt-6 text-center text-sm text-gray-500'>Don't have an account ? <div onClick={() => setStep("signup")} className='text-black font-medium hover:underline cursor-pointer'>Sign Up</div></p>
+
+                    </motion.div>
+                  )}
+
+                  {step == "signup" && (
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                    >
+                      <h1 className='text-xl font-semibold'>Create Account</h1>
+                      <div className='mt-5 space-y-4'>
+
+                        <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
+                          <User size={18} className='text-gray-500' />
+                          <input type="text" placeholder='Full Name' className='w-full bg-transparent outline-none text-sm' />
+                        </div>
+
+                        <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
+                          <Mail size={18} className='text-gray-500' />
+                          <input type="email" placeholder='Email' className='w-full bg-transparent outline-none text-sm' />
+                        </div>
+
+                        <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
+                          <Lock size={18} className='text-gray-500' />
+                          <input type="password" placeholder='Password' className='w-full bg-transparent outline-none text-sm' />
+                        </div>
+
+                        <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition'>Sign up</button>
+
+                      </div>
+                      <p className='mt-6 text-center text-sm text-gray-500'>Already have an account ? <div onClick={() => setStep("login")} className='text-black font-medium hover:underline cursor-pointer'>login</div></p>
+
                     </motion.div>
                   )}
                 </div>
