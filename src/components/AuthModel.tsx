@@ -1,11 +1,12 @@
 'use client'
 import React, { useState } from 'react'
 import { AnimatePresence, motion, useScroll } from 'motion/react'
-import { X } from 'lucide-react'
+import { CircleDashed, X } from 'lucide-react'
 import Image from 'next/image'
 import { Mail } from 'lucide-react'
 import { Lock } from 'lucide-react'
 import { User } from 'lucide-react'
+import axios from 'axios'
 
 type propType = {
   isOpen: boolean,
@@ -17,6 +18,27 @@ type setStep = "login" | "signup" | "otp"
 const AuthModel = ({ isOpen, onClose }: propType) => {
 
   const [step, setStep] = useState<setStep>('login')
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
+
+  const handleSignUp = async () => {
+    setLoading(true)
+    try {
+      const { data } = await axios.post("/api/auth/register", {
+        name, email, password
+      })
+      console.log(data)
+      setLoading(false)
+      onClose()
+    } catch (error: any) {
+      setLoading(false)
+      setError(error.response.data.message ?? "Something went wrong")
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -25,7 +47,7 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{opacity: 0}}
+            exit={{ opacity: 0 }}
             className='fixed inset-0 z-[90] bg-black/80 backdrop-blur-md'
           >
 
@@ -33,7 +55,7 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
               initial={{ opacity: 0, scale: 0.95, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
-              exit={{ opacity: 0, scale: 0.95, y: 40}}
+              exit={{ opacity: 0, scale: 0.95, y: 40 }}
               className='fixed inset-0 z-[100] flex items-center justify-center px-4'
             >
 
@@ -73,12 +95,18 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
                       <div className='mt-5 space-y-4'>
                         <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
                           <Mail size={18} className='text-gray-500' />
-                          <input type="email" placeholder='Email' className='w-full bg-transparent outline-none text-sm' />
+                          <input type="email" placeholder='Email' className='w-full bg-transparent outline-none text-sm'
+                            onChange={(e) => setEmail(e.target.value)}
+                            value={email}
+                          />
                         </div>
 
                         <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
                           <Lock size={18} className='text-gray-500' />
-                          <input type="password" placeholder='Password' className='w-full bg-transparent outline-none text-sm' />
+                          <input type="password" placeholder='Password' className='w-full bg-transparent outline-none text-sm'
+                            onChange={(e) => setPassword(e.target.value)}
+                            value={password}
+                          />
                         </div>
 
                         <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition'>Login</button>
@@ -99,20 +127,31 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
 
                         <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
                           <User size={18} className='text-gray-500' />
-                          <input type="text" placeholder='Full Name' className='w-full bg-transparent outline-none text-sm' />
+                          <input type="text" placeholder='Full Name' className='w-full bg-transparent outline-none text-sm'
+                            onChange={(e) => setName(e.target.value)}
+                            value={name}
+                          />
                         </div>
 
                         <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
                           <Mail size={18} className='text-gray-500' />
-                          <input type="email" placeholder='Email' className='w-full bg-transparent outline-none text-sm' />
+                          <input type="email" placeholder='Email' className='w-full bg-transparent outline-none text-sm'
+                            onChange={(e) => setEmail(e.target.value)}
+                            value={email}
+                          />
                         </div>
 
                         <div className='flex items-center gap-3 border border-black/20 rounded-xl px-4 py-3'>
                           <Lock size={18} className='text-gray-500' />
-                          <input type="password" placeholder='Password' className='w-full bg-transparent outline-none text-sm' />
+                          <input type="password" placeholder='Password' className='w-full bg-transparent outline-none text-sm'
+                            onChange={(e) => setPassword(e.target.value)}
+                            value={password}
+                          />
                         </div>
 
-                        <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition'>Sign up</button>
+                        {error && <p className='text-red-500'>*{error}</p>}
+
+                        <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition flex items-center justify-center' disabled={loading} onClick={handleSignUp}>{!loading ? "Sign Up" : <CircleDashed size={18} color='white' className='animate-spin' />}</button>
 
                       </div>
                       <p className='mt-6 text-center text-sm text-gray-500'>Already have an account ? <div onClick={() => setStep("login")} className='text-black font-medium hover:underline cursor-pointer'>login</div></p>
@@ -120,8 +159,6 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
                     </motion.div>
                   )}
                 </div>
-
-
 
               </div>
 
