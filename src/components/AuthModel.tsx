@@ -7,6 +7,7 @@ import { Mail } from 'lucide-react'
 import { Lock } from 'lucide-react'
 import { User } from 'lucide-react'
 import axios from 'axios'
+import { signIn, useSession } from 'next-auth/react'
 
 type propType = {
   isOpen: boolean,
@@ -25,6 +26,9 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
   const [error, setError] = useState("")
 
 
+  const {data} = useSession(); 
+  console.log(data)
+
   const handleSignUp = async () => {
     setLoading(true)
     try {
@@ -39,6 +43,16 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
       setError(error.response.data.message ?? "Something went wrong")
     }
   }
+
+  const handleLogin = async() => { 
+    setLoading(true)
+    const res = await signIn("credentials", {
+      email, password, redirect:false
+    })
+    setLoading(false)
+    console.log(res)
+  }
+
 
   return (
     <AnimatePresence>
@@ -109,10 +123,10 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
                           />
                         </div>
 
-                        <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition'>Login</button>
+                        <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition' onClick={handleLogin}>{!loading ? "Login" : <CircleDashed size={18} color='white' className='animate-spin' />}</button>
 
                       </div>
-                      <p className='mt-6 text-center text-sm text-gray-500'>Don't have an account ? <div onClick={() => setStep("signup")} className='text-black font-medium hover:underline cursor-pointer'>Sign Up</div></p>
+                      <p className='mt-6 text-center text-sm text-gray-500'>Don't have an account ? <span onClick={() => setStep("signup")} className='text-black font-medium hover:underline cursor-pointer'>Sign Up</span></p>
 
                     </motion.div>
                   )}
@@ -154,7 +168,7 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
                         <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition flex items-center justify-center' disabled={loading} onClick={handleSignUp}>{!loading ? "Sign Up" : <CircleDashed size={18} color='white' className='animate-spin' />}</button>
 
                       </div>
-                      <p className='mt-6 text-center text-sm text-gray-500'>Already have an account ? <div onClick={() => setStep("login")} className='text-black font-medium hover:underline cursor-pointer'>login</div></p>
+                      <p className='mt-6 text-center text-sm text-gray-500'>Already have an account ? <span onClick={() => setStep("login")} className='text-black font-medium hover:underline cursor-pointer'>login</span></p>
 
                     </motion.div>
                   )}
