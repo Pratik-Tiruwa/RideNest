@@ -18,12 +18,13 @@ type setStep = "login" | "signup" | "otp"
 
 const AuthModel = ({ isOpen, onClose }: propType) => {
 
-  const [step, setStep] = useState<setStep>('login')
+  const [step, setStep] = useState<setStep>('otp')
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [otp, setOtp] = useState(["","","","","",""])
 
 
   const { data } = useSession();
@@ -55,6 +56,15 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
 
   const handleGoogleLogin = async () => {
     await signIn("google")
+  }
+
+  const handleChangeOtp = (index:number, value:string) => { 
+     if(!/^[0-9]?$/.test(value)) return 
+
+     const updated = [...otp]
+     updated[index] = value
+     setOtp(updated)
+
   }
 
 
@@ -175,6 +185,32 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
 
                       </div>
                       <p className='mt-6 text-center text-sm text-gray-500'>Already have an account ? <span onClick={() => setStep("login")} className='text-black font-medium hover:underline cursor-pointer'>login</span></p>
+
+                    </motion.div>
+                  )}
+
+                  {step == "otp" && ( 
+                    <motion.div
+                      key="otp" 
+                      initial={{opacity:0, x:20}}
+                      animate={{opacity:1, x:0}}
+                      exit={{opacity:0, x: -20}}
+                    > 
+
+                      <h2 className='text-xl font-semibold'>Verify Email</h2>
+
+                      <div className='mt-6 flex justify-between gap-2'> 
+                        {otp.map((digit, i) => (
+                          <input 
+                          key={i} 
+                          id={`otp-${i}`} 
+                          value={digit}
+                          maxLength={1}
+                          className='w-2- h-12 sm:w-12 text-center text-lg font-semibold rounded-xl bg-white border border-black/20 outline-none'
+                          onChange={(e) => handleChangeOtp(i,e.target.value)}
+                          />
+                        ))}
+                      </div>
 
                     </motion.div>
                   )}
