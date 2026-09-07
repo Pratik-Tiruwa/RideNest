@@ -54,26 +54,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         async signIn({ user, account }) {
             if (account?.provider == "google") {
                 await connectDb()
-                const dbUser = await User.findOne({email : user.email})
-                
-                if(!dbUser) { 
-                    await User.create({ 
-                        name : user.name, 
-                        email : user.email
+                const dbUser = await User.findOne({ email: user.email })
+
+                if (!dbUser) {
+                    await User.create({
+                        name: user.name,
+                        email: user.email
                     })
                 }
 
-                user.id = dbUser._id 
-                user.role = dbUser.role 
+                user.id = dbUser._id
+                user.role = dbUser.role
             }
             return true
         },
         async jwt({ token, user }) {
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            token.name = user.name,
-                token.id = user.id,
-                token.email = user.email,
-                token.role = user.role
+
+            if (user) {
+                token.name = user.name,
+                    token.id = user.id,
+                    token.email = user.email,
+                    token.role = user.role
+            }
+
 
             return token
         },
