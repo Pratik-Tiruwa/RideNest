@@ -26,7 +26,7 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
   const [error, setError] = useState("")
 
 
-  const {data} = useSession(); 
+  const { data } = useSession();
   console.log(data)
 
   const handleSignUp = async () => {
@@ -44,13 +44,17 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
     }
   }
 
-  const handleLogin = async() => { 
+  const handleLogin = async () => {
     setLoading(true)
     const res = await signIn("credentials", {
-      email, password, redirect:false
+      email, password, redirect: false
     })
     setLoading(false)
     console.log(res)
+  }
+
+  const handleGoogleLogin = async () => {
+    await signIn("google")
   }
 
 
@@ -88,7 +92,9 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
                 flex items-center justify-center gap-3
                 text-sm font-semibold 
                 hover:bg-black hover:text-white
-                transition'>
+                transition'
+                  onClick={handleGoogleLogin}
+                >
                   <Image src={"/google.png"} alt='google' width={20} height={20} />
                   Continue with Google
                 </button>
