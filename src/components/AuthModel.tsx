@@ -27,7 +27,11 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
 
 
+<<<<<<< HEAD
   const { data } = useSession();
+=======
+  const {data} = useSession(); 
+>>>>>>> 1d8be792246c3686d12f30b1cd13b293f6892e94
   console.log(data)
 
   const handleSignUp = async () => {
@@ -65,8 +69,12 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
     }
   }
 
+<<<<<<< HEAD
 
   const handleLogin = async () => {
+=======
+  const handleLogin = async() => { 
+>>>>>>> 1d8be792246c3686d12f30b1cd13b293f6892e94
     setLoading(true)
     const res = await signIn("credentials", {
       email, password, redirect: false
@@ -167,7 +175,11 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
                           />
                         </div>
 
+<<<<<<< HEAD
                         <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition flex items-center justify-center' onClick={handleLogin}>{!loading ? "Login" : <CircleDashed size={18} color='white' className='animate-spin' />}</button>
+=======
+                        <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition' onClick={handleLogin}>{!loading ? "Login" : <CircleDashed size={18} color='white' className='animate-spin' />}</button>
+>>>>>>> 1d8be792246c3686d12f30b1cd13b293f6892e94
 
                       </div>
                       <p className='mt-6 text-center text-sm text-gray-500'>Don't have an account ? <span onClick={() => setStep("signup")} className='text-black font-medium hover:underline cursor-pointer'>Sign Up</span></p>
@@ -212,6 +224,7 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
                         <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition flex items-center justify-center' disabled={loading} onClick={handleSignUp}>{!loading ? "Send otp" : <CircleDashed size={18} color='white' className='animate-spin' />}</button>
 
                       </div>
+<<<<<<< HEAD
                       <p className='mt-6 text-center text-sm text-gray-500'>Already have an account ? <span onClick={() => setStep("login")} className='text-black font-medium hover:underline cursor-pointer'>Login</span></p>
 
                     </motion.div>
@@ -245,6 +258,9 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
                       <button className='mt-6 w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition flex items-center justify-center' onClick={handleVerifyEmail}>
                         {!loading ? "Verify OTP and Create Account" : <CircleDashed size={18} color='white' className='animate-spin' />}
                       </button>
+=======
+                      <p className='mt-6 text-center text-sm text-gray-500'>Already have an account ? <span onClick={() => setStep("login")} className='text-black font-medium hover:underline cursor-pointer'>login</span></p>
+>>>>>>> 1d8be792246c3686d12f30b1cd13b293f6892e94
 
                     </motion.div>
                   )}
