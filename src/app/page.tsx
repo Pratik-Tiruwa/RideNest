@@ -4,10 +4,11 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <div className="w-full min-h-screen bg-white">
+    <main className="min-h-screen flex flex-col">
       <Navbar />
-      <PublicHome /> 
+      <PublicHome />
       <Footer />
-    </div>
+    </main>
   );
 }
+

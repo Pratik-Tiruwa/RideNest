@@ -2,6 +2,7 @@ import connectDb from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt"
 import User from '@/models/user.model'
+import { sendMail } from "@/lib/sendMail";
 
 export async function POST(req: NextRequest) {
 
@@ -10,14 +11,17 @@ export async function POST(req: NextRequest) {
         await connectDb();
         let user = await User.findOne({ email })
 
-        if (user) {
+        if (user && user.isEmailVerified) {
             return NextResponse.json(
                 { message: 'Email Already Exist!' },
                 { status: 400 }
             )
         }
 
-         if (password.length < 6) {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+        if (password.length < 6) {
             return NextResponse.json(
                 { message: 'Password must be alteast 6 characters' },
                 { status: 400 }
@@ -25,10 +29,24 @@ export async function POST(req: NextRequest) {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
+        if (user && !user.isEmailVerified) {
+            user.name = name,
+                user.password = hashedPassword,
+                user.email = email,
+                user.otp = otp,
+                user.otpExpiresAt = otpExpiresAt
+            await user.save();
+        } else {
+            user = await User.create({
+                name, email, password: hashedPassword, otp, otpExpiresAt
+            })
+        }
 
-        user = await User.create({
-            name, email, password: hashedPassword
-        })
+        await sendMail(
+            email,
+            "Your OTP for Email Verification",
+            `<h2>Your Email Verification OTP is <strong>${otp}</strong></h2>`
+        )
 
         return NextResponse.json(
             user,
