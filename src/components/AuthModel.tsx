@@ -18,13 +18,13 @@ type setStep = "login" | "signup" | "otp"
 
 const AuthModel = ({ isOpen, onClose }: propType) => {
 
-  const [step, setStep] = useState<setStep>('otp')
+  const [step, setStep] = useState<setStep>('login')
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [otp, setOtp] = useState(["","","","","",""])
+  const [otp, setOtp] = useState(["", "", "", "", "", ""])
 
 
   const { data } = useSession();
@@ -36,7 +36,27 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
       const { data } = await axios.post("/api/auth/register", {
         name, email, password
       })
+      setError("")
       setStep("otp")
+      setLoading(false)
+      // onClose()
+    } catch (error: any) {
+      setLoading(false)
+      setError(error.response.data.message ?? "Something went wrong")
+    }
+  }
+
+
+  const handleVerifyEmail = async () => {
+    setLoading(true)
+    try {
+      const { data } = await axios.post("/api/auth/verify-email", {
+        email, otp: otp.join("")
+      })
+      console.log(data)
+      setOtp(["", "", "", "", "", ""])
+      setError("")
+      setStep("login")
       setLoading(false)
       onClose()
     } catch (error: any) {
@@ -44,6 +64,7 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
       setError(error.response.data.message ?? "Something went wrong")
     }
   }
+
 
   const handleLogin = async () => {
     setLoading(true)
@@ -58,20 +79,20 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
     await signIn("google")
   }
 
-  const handleChangeOtp = (index:number, value:string) => { 
-     if(!/^[0-9]?$/.test(value)) return 
+  const handleChangeOtp = (index: number, value: string) => {
+    if (!/^[0-9]?$/.test(value)) return
 
-     const updated = [...otp]
-     updated[index] = value
-     setOtp(updated)
+    const updated = [...otp]
+    updated[index] = value
+    setOtp(updated)
 
-     if(value && index<otp.length-1) { 
-       document.getElementById(`otp-${index+1}`)?.focus()  
-     }
+    if (value && index < otp.length - 1) {
+      document.getElementById(`otp-${index + 1}`)?.focus()
+    }
 
-     if(!value && index>0) { 
-       document.getElementById(`otp-${index-1}`)?.focus()  
-     }
+    if (!value && index > 0) {
+      document.getElementById(`otp-${index - 1}`)?.focus()
+    }
   }
 
 
@@ -196,30 +217,34 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
                     </motion.div>
                   )}
 
-                  {step == "otp" && ( 
+                  {step == "otp" && (
                     <motion.div
-                      key="otp" 
-                      initial={{opacity:0, x:20}}
-                      animate={{opacity:1, x:0}}
-                      exit={{opacity:0, x: -20}}
-                    > 
+                      key="otp"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                    >
 
                       <h2 className='text-xl font-semibold'>Verify Email</h2>
 
-                      <div className='mt-6 flex justify-between gap-2'> 
+                      <div className='mt-6 flex justify-between gap-2'>
                         {otp.map((digit, i) => (
-                          <input 
-                          key={i} 
-                          id={`otp-${i}`} 
-                          value={digit}
-                          maxLength={1}
-                          className='w-2- h-12 sm:w-12 text-center text-lg font-semibold rounded-xl bg-white border border-black/20 outline-none'
-                          onChange={(e) => handleChangeOtp(i,e.target.value)}
+                          <input
+                            key={i}
+                            id={`otp-${i}`}
+                            value={digit}
+                            maxLength={1}
+                            className='w-2- h-12 sm:w-12 text-center text-lg font-semibold rounded-xl bg-white border border-black/20 outline-none'
+                            onChange={(e) => handleChangeOtp(i, e.target.value)}
                           />
                         ))}
                       </div>
 
-                      <button className='mt-6 w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition'>Verify and Create Account</button>
+                      {error && <p className='text-red-500'>*{error}</p>}
+
+                      <button className='mt-6 w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition flex items-center justify-center' onClick={handleVerifyEmail}>
+                        {!loading ? "Verify OTP and Create Account" : <CircleDashed size={18} color='white' className='animate-spin' />}
+                      </button>
 
                     </motion.div>
                   )}
