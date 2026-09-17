@@ -58,20 +58,30 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
       setError("")
       setStep("login")
       setLoading(false)
-      onClose()
     } catch (error: any) {
       setLoading(false)
-      setError(error.response.data.message ?? "Something went wrong")
+      setError(error.response?.data?.message ?? "Something went wrong")
     }
   }
 
   const handleLogin = async () => {
     setLoading(true)
-    const res = await signIn("credentials", {
-      email, password, redirect: false
-    })
-    setLoading(false)
-    console.log(res)
+    setError("")
+    try {
+      const res = await signIn("credentials", {
+        email, password, redirect: false
+      })
+      setLoading(false)
+      if (res?.error) {
+        setError("Invalid email or password")
+      } else if (res?.ok) {
+        onClose()
+      }
+      console.log(res)
+    } catch (err: any) {
+      setLoading(false)
+      setError("Login failed")
+    }
   }
 
   const handleGoogleLogin = async () => {
@@ -166,10 +176,12 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
                           />
                         </div>
 
+                        {error && <p className='text-red-500'>*{error}</p>}
+
                         <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition flex items-center justify-center' onClick={handleLogin}>{!loading ? "Login" : <CircleDashed size={18} color='white' className='animate-spin' />}</button>
 
                       </div>
-                      <p className='mt-6 text-center text-sm text-gray-500'>Don't have an account ? <span onClick={() => setStep("signup")} className='text-black font-medium hover:underline cursor-pointer'>Sign Up</span></p>
+                      <p className='mt-6 text-center text-sm text-gray-500'>Don't have an account ? <span onClick={() => { setError(""); setStep("signup"); }} className='text-black font-medium hover:underline cursor-pointer'>Sign Up</span></p>
 
                     </motion.div>
                   )}
@@ -211,7 +223,7 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
                         <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition flex items-center justify-center' disabled={loading} onClick={handleSignUp}>{!loading ? "Send otp" : <CircleDashed size={18} color='white' className='animate-spin' />}</button>
 
                       </div>
-                      <p className='mt-6 text-center text-sm text-gray-500'>Already have an account ? <span onClick={() => setStep("login")} className='text-black font-medium hover:underline cursor-pointer'>Login</span></p>
+                      <p className='mt-6 text-center text-sm text-gray-500'>Already have an account ? <span onClick={() => { setError(""); setStep("login"); }} className='text-black font-medium hover:underline cursor-pointer'>Login</span></p>
 
                     </motion.div>
                   )}
