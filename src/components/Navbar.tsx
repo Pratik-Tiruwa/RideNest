@@ -1,11 +1,16 @@
 'use client'
 import React from 'react'
-import { motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import AuthModel from './AuthModel'
+import { useSelector, useDispatch } from 'react-redux'
+import { RootState, AppDispatch } from '@/redux/store'
+import { Bike, Car, ChevronRight, LogOut, Truck } from 'lucide-react'
+import { signOut } from 'next-auth/react'
+import { setUserData } from '@/redux/userSlice'
 
 const Nav_items = ["Home", "Bookings", "About Us", "Contact"]
 
@@ -13,9 +18,17 @@ const Nav_items = ["Home", "Bookings", "About Us", "Contact"]
 function Navbar() {
 
   const [authOpen, setAuthOpen] = useState(false)
-
+  const [profileOpen, setProfileOpen] = useState(false)
   const pathName = usePathname();
 
+  const { userData } = useSelector((state: RootState) => state.user)
+  const dispatch = useDispatch<AppDispatch>()
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false })
+    dispatch(setUserData(null))
+    setProfileOpen(false)
+  }
   return (
     <>
       <motion.div
@@ -58,11 +71,67 @@ function Navbar() {
 
           </div>
 
-          <button className='px-4 py-1.5 rounded-full bg-white text-black text-sm'
-            onClick={() => setAuthOpen(true)}
-          >
-            Login
-          </button>
+          <div className='flex items-center gap-3 relative'>
+
+            <div className='hidden md:block relative'>
+              {!userData ? (
+                <button className='px-4 py-1.5 rounded-full bg-white text-black text-sm'
+                  onClick={() => setAuthOpen(true)}
+                >
+                  Login
+                </button>
+              ) : (
+                <>
+                  <button className='w-11 h-11 rounded-full bg-white text-black font-bold' onClick={() => setProfileOpen(prev => !prev)}>
+                    {userData.name.charAt(0).toUpperCase()}
+                  </button>
+
+                  <AnimatePresence>
+                    {profileOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className='absolute top-14 right-0 w-[300px] bg-white text-black rounded-2xl shadow-xl border'
+                      >
+
+                        <div className='p-5'>
+                          <p className='text-lg font-semibold'>{userData.name}</p>
+                          <p className='text-xs uppercase text-gray-500 mb-4'>{userData.role}</p>
+                          {userData.role != "partner" && (
+                            <div className='w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-xl'>
+                              <div className='flex space-x-2'>
+
+                                <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Bike size={16} /> </div>
+                                <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Car size={16} /> </div>
+                                <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Truck size={16} /> </div>
+
+
+                              </div>
+
+                              Become a Partner
+                              <ChevronRight size={16} className='ml-auto' />
+                            </div>
+                          )
+                          }
+
+                          <button className='w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-xl mt-2' onClick={handleLogout}>
+                            <LogOut size={16}/>
+                            Logout
+                          </button>
+                        </div>
+
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                </>
+              )
+              }
+            </div>
+
+
+          </div>
 
         </div>
 
