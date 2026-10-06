@@ -188,8 +188,8 @@ function Navbar() {
                   } else {
                     href = `/${i.toLowerCase()}`
                   }
-                  
-                  return <Link key={index} href={href} className="px-6 py-4 text-gray-300 hover:bg-white/5">{i}</Link> 
+
+                  return <Link key={index} href={href} className="px-6 py-4 text-gray-300 hover:bg-white/5">{i}</Link>
                 })}
               </div>
 
@@ -197,6 +197,55 @@ function Navbar() {
 
           </>
 
+        )}
+      </AnimatePresence>
+
+
+      <AnimatePresence>
+        {profileOpen && userData && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.4 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setProfileOpen(false)}
+              className='fixed inset-0 bg-black z-30 md:hidden'
+            />
+
+            <motion.div
+              initial={{ y: 400 }}
+              animate={{ y: 0 }}
+              exit={{ y: 400 }}
+              transition={{ type: "spring", damping: 25 }}
+              className='fixed inset-x-0 bottom-0 bg-white rounded-t-3xl shadow-2xl z-50 md:hidden p-6'
+            >
+              <div className='p-5'>
+                <p className='text-lg font-semibold'>{userData.name}</p>
+                <p className='text-xs uppercase text-gray-500 mb-4'>{userData.role}</p>
+                {userData.role != "partner" && (
+                  <div className='w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-xl'>
+                    <div className='flex space-x-2'>
+
+                      <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Bike size={16} /> </div>
+                      <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Car size={16} /> </div>
+                      <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Truck size={16} /> </div>
+
+
+                    </div>
+
+                    Become a Partner
+                    <ChevronRight size={16} className='ml-auto' />
+                  </div>
+                )
+                }
+
+                <button className='w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-xl mt-2' onClick={handleLogout}>
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
