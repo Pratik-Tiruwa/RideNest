@@ -44,9 +44,12 @@ function Footer() {
             </div>
           </div>
 
+        </div>
 
-
-
+        <div className='border-t border-white/10'>
+          <div className='max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 gap-4'>
+            <p>© {new Date().getFullYear()} RideNest. All rights reserved. </p>
+          </div>
         </div>
 
       </motion.div>
