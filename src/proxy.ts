@@ -11,8 +11,8 @@ export async function proxy(req: NextRequest) {
 
     if (
         pathname.startsWith("/_next") ||
-        pathname.startsWith("/favicon.io") ||
-        pathname.startsWith(".")
+        pathname.startsWith("/favicon.ico") ||
+        /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(pathname)
     ) {
         return NextResponse.next();
     }
@@ -39,6 +39,9 @@ export async function proxy(req: NextRequest) {
     }
 
     if (pathname.startsWith("/partner")) {
+        if (pathname.startsWith("/partner/onboarding")) {
+            return NextResponse.next();
+        }
         if (role != "partner") {
             return NextResponse.redirect(new URL("/", req.url))
         }
@@ -58,6 +61,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-    matcher : "/((?!api|_next/static|_next/image|favicon.ico).*)", 
-
+    matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico)$).*)"],
 }
