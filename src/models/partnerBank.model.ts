@@ -1,0 +1,48 @@
+import mongoose from "mongoose" 
+
+interface IPartnerBank{ 
+    owner : mongoose.Types.ObjectId, 
+    accountHolder : string, 
+    accountNumber : string, 
+    ifscCode : string, 
+    upi?: string, 
+    status : "not_added" | "added" | "verified", 
+    createdAt : Date, 
+    updatedAt : Date
+} 
+
+
+const bankSchema = new mongoose.Schema<IPartnerBank>({  
+
+    owner : { 
+        type : mongoose.Types.ObjectId, 
+        ref : "User", 
+        require : true
+    }, 
+    accountHolder : { 
+        type : String, 
+        required : true
+    },
+    accountNumber : { 
+        type : String, 
+        required : true, 
+        unique : true
+    }, 
+    ifscCode : { 
+        type : String, 
+        required : true, 
+        uppercase : true
+    }, 
+    upi: String, 
+
+    status : { 
+        type : String, 
+        enum : ["not_added", "added", "verified"], 
+        default : "not_added"
+    }, 
+
+},  {timestamps : true})
+
+const PartnerBank = mongoose.models.bankSchema || mongoose.model("PartnerBank", bankSchema) 
+
+export default PartnerBank;
