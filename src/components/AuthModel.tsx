@@ -27,10 +27,10 @@ const AuthModel = ({ isOpen, onClose }: propType) => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
 
 
-  const session  = useSession();
+  const session = useSession();
   console.log(session)
 
-  
+
 
   const handleSignUp = async () => {
     setLoading(true)
