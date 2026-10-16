@@ -119,6 +119,14 @@ function page() {
 
                 </div>
 
+                <motion.button
+                whileHover={{ scale : 1.02}}
+                whileTap={{ scale : 0.97 }}
+                className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition'
+                > Continue
+
+                </motion.button>
+
             </motion.div>
 
         </div>
