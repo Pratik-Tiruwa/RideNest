@@ -137,7 +137,7 @@ function page() {
                     </div>
 
                 </div>
-                {error &&  <p className='text-red-500 mt-2 mt-4'>*{error}</p> }
+                {error &&  <p className='text-red-500 mt-4'>*{error}</p> }
                 
                 <motion.button
                 whileHover={{ scale : 1.02}}
