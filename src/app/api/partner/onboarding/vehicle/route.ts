@@ -25,7 +25,7 @@ export async function POST(req: Request) {
             return Response.json({ message: "missing required details" }, { status: 400 })
         }
 
-        if (VEHICLE_REGEX.test(number)) {
+        if (!VEHICLE_REGEX.test(number)) {
             return Response.json(
                 { message: "Invalid Vehicle Number Format" },
                 { status: 400 }
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
         }
 
 
-        let vehicle = await Vehicle.findOne({ owner: session.user.id })
+        let vehicle = await Vehicle.findOne({ owner: user._id })
 
         if (vehicle) {
             vehicle.type = type,
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
             return Response.json(vehicle, { status: 200 })
         }
         vehicle = await Vehicle.create({
+            owner: user._id,
             type,
             number: vehicleNumber,
             vehicleModel
@@ -104,6 +105,6 @@ export async function GET(req: NextRequest) {
     } catch (error) {
         return Response.json({ message: `get vehicle error ${error}` },
             { status: 500 }
-        ) 
+        )
     }
 }
