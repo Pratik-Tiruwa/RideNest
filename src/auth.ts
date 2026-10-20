@@ -78,6 +78,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     token.role = user.role
             }
 
+            // DB se hamesha fresh role sync kareing (Google login aur role updates dono ke liye zaroori) 
+            
+            if (token.email) {
+                await connectDb();
+                const dbUser = await User.findOne({ email: token.email });
+
+                if(dbUser) { 
+                    token.role = dbUser.role;
+                    token.id = dbUser._id.toString(); 
+                } 
+            }
+
 
             return token
         },
