@@ -35,14 +35,7 @@ export async function POST(req: Request) {
 
 
         const vehicleNumber = number.toUpperCase();
-        const duplicate = await Vehicle.findOne({ number: vehicleNumber })
 
-        if (duplicate) {
-            return Response.json(
-                { message: "Vehicle Already Resgistered" },
-                { status: 400 }
-            )
-        }
 
 
         let vehicle = await Vehicle.findOne({ owner: user._id })
@@ -56,6 +49,16 @@ export async function POST(req: Request) {
 
             return Response.json(vehicle, { status: 200 })
         }
+
+        const duplicate = await Vehicle.findOne({ number: vehicleNumber })
+
+        if (duplicate) {
+            return Response.json(
+                { message: "Vehicle Already Resgistered" },
+                { status: 400 }
+            )
+        }
+
         vehicle = await Vehicle.create({
             owner: user._id,
             type,

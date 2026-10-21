@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from "motion/react"
 import { ArrowLeft, Bike, Car, CircleDashed, Package, Truck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -17,25 +17,41 @@ function page() {
     const router = useRouter();
     const [vehicleType, setVehicleType] = useState("")
     const [vehicleNumber, setVehicleNumber] = useState("")
-    const [vehicleModel, setVehicleModel] = useState("") 
+    const [vehicleModel, setVehicleModel] = useState("")
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false)
 
-    const handleVehicle = async() => { 
+    const handleVehicle = async () => {
         setError("")
         try {
             setLoading(true)
-            const {data} = await axios.post("/api/partner/onboarding/vehicle", {
-                type : vehicleType, 
-                number : vehicleNumber, 
-                vehicleModel : vehicleModel 
+            const { data } = await axios.post("/api/partner/onboarding/vehicle", {
+                type: vehicleType,
+                number: vehicleNumber,
+                vehicleModel: vehicleModel
             })
             setLoading(false)
-        } catch (error:any) {
+        } catch (error: any) {
             setError(error?.response?.data?.message ?? "Something went wrong");
             setLoading(false)
         }
     }
+
+    useEffect(() => {
+        const handleGetVehicle = async () => {
+
+            try {
+                const { data } = await axios.get("/api/partner/onboarding/vehicle")
+                setVehicleType(data.type)
+                setVehicleNumber(data.number)  
+                setVehicleModel(data.vehicleModel)
+
+            } catch (error: any) {
+                console.log(error)
+            }
+        }
+        handleGetVehicle()
+    }, [])
 
     return (
         <div className='min-h-screen bg-white flex items-center justify-center px-4'>
@@ -116,36 +132,36 @@ function page() {
 
                     <div>
                         <label htmlFor='vn' className='text-xs font-semibold text-gray-500'>Vehicle Number</label>
-                        <input 
-                        type='text' 
-                        onChange={(e)=>setVehicleNumber(e.target.value.toUpperCase())}
-                        value={vehicleNumber}
-                        id='vn' 
-                        placeholder='MH12AB1234' 
-                        className='mt-2 w-full border-b border-gray-300 pb-2 text-sm focus:outline-none focus:border-black transition' />
+                        <input
+                            type='text'
+                            onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
+                            value={vehicleNumber}
+                            id='vn'
+                            placeholder='MH12AB1234'
+                            className='mt-2 w-full border-b border-gray-300 pb-2 text-sm focus:outline-none focus:border-black transition' />
                     </div>
 
                     <div>
                         <label htmlFor='vm' className='text-xs font-semibold text-gray-500'>Vehicle Number</label>
-                        <input 
-                        type='text' 
-                        onChange={(e)=>setVehicleModel(e.target.value)}
-                        value={vehicleModel}
-                        id='vm' 
-                        placeholder='Tata Ace' 
-                        className='mt-2 w-full border-b border-gray-300 pb-2 text-sm focus:outline-none focus:border-black transition' />
+                        <input
+                            type='text'
+                            onChange={(e) => setVehicleModel(e.target.value)}
+                            value={vehicleModel}
+                            id='vm'
+                            placeholder='Tata Ace'
+                            className='mt-2 w-full border-b border-gray-300 pb-2 text-sm focus:outline-none focus:border-black transition' />
                     </div>
 
                 </div>
-                {error &&  <p className='text-red-500 mt-4'>*{error}</p> }
-                
+                {error && <p className='text-red-500 mt-4'>*{error}</p>}
+
                 <motion.button
-                whileHover={{ scale : 1.02}}
-                whileTap={{ scale : 0.97 }}
-                disabled={loading}
-                className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition'
-                onClick={handleVehicle}
-                > {loading? <CircleDashed className='text-white  animate-spin' /> : "Continue"}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    disabled={loading}
+                    className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition'
+                    onClick={handleVehicle}
+                > {loading ? <CircleDashed className='text-white  animate-spin' /> : "Continue"}
 
                 </motion.button>
 
