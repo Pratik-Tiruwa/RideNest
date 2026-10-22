@@ -83,9 +83,16 @@ function page() {
             </div>
 
             <div>
-              <span className='text-xs text-gray-400'>Upload</span>
-              <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+              {docs.aadhar
+                ? <span className='text-xs font-medium text-green-600'>Uploaded</span>
+                :
+                <div>
+                  <span className='text-xs text-gray-400'>Upload</span>
+                  <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+                </div>
+              }
             </div>
+
             <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("aadhar", e.target.files?.[0] || null)} />
 
           </motion.label>
@@ -101,8 +108,14 @@ function page() {
             </div>
 
             <div>
-              <span className='text-xs text-gray-400'>Upload</span>
-              <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+              {docs.license
+                ? <span className='text-xs text-green-600 font-medium'>Uploaded</span>
+                :
+                <div>
+                  <span className='text-xs text-gray-400'>Upload</span>
+                  <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+                </div>
+              }
             </div>
 
             <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("license", e.target.files?.[0] || null)} />
@@ -120,8 +133,13 @@ function page() {
             </div>
 
             <div>
-              <span className='text-xs text-gray-400'>Upload</span>
-              <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+              {docs.rc
+                ? <span className='text-xs text-green-600 font-medium'>Uploaded</span>
+                : <div>
+                    <span className='text-xs text-gray-400'>Upload</span>
+                    <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+                  </div>
+              }
             </div>
 
             <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("rc", e.target.files?.[0] || null)} />
