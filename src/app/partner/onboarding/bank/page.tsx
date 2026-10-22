@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from "motion/react"
 import { ArrowBigLeftDash, BadgeCheck, CheckCircle, CircleDashed, CreditCard, Landmark, Phone } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -18,12 +18,12 @@ function page() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
 
-    
+
     const sanitizedIfsc = ifscCode.trim().toUpperCase();
     const isIfscValid = IFSC_REGEX.test(sanitizedIfsc)
     const isNameValid = accountHolder.trim().length >= 3
     const isAccountValid = accountNumber.trim().length >= 9
-    const isMobileValid = mobileNumber.trim().length==10 
+    const isMobileValid = mobileNumber.trim().length == 10
 
     const canSubmit = isNameValid && isAccountValid && isIfscValid && isMobileValid
 
@@ -32,10 +32,10 @@ function page() {
         setError("")
         try {
             const { data } = await axios.post("/api/partner/onboarding/bank", {
-                accountHolder, 
-                accountNumber, 
-                ifscCode : sanitizedIfsc, 
-                upi, 
+                accountHolder,
+                accountNumber,
+                ifscCode: sanitizedIfsc,
+                upi,
                 mobileNumber
             })
             console.log(data)
@@ -47,6 +47,29 @@ function page() {
         }
 
     }
+
+    useEffect(() => {
+        const handleGetBank = async () => {
+             setLoading(true)
+            try {
+                const { data } = await axios.get("/api/partner/onboarding/bank")
+                console.log(data) 
+
+                setAccountHolder(data.partnerBank.accountHolder)
+                setAccountNumber(data.partnerBank.accountNumber)
+                setIfscCode(data.partnerBank.ifscCode)
+                setMobileNumber(data.mobileNumber)
+                setUpi(data.partnerBank.upi)
+                setLoading(false)
+            } catch (error: any) {
+                console.log(error)
+                setLoading(false)
+            }
+
+        }
+
+        handleGetBank();
+    }, [])
 
     return (
 
@@ -81,14 +104,14 @@ function page() {
                                 <BadgeCheck />
                             </div>
 
-                            <input type='text' 
-                            id='ahn' 
-                            placeholder='As per bank record' 
-                            className={`flex-1 border-b pb-2 text-sm focus:outline-none ${!isNameValid && accountHolder.length>0 ? "border-red-400 focus:border-red-500" : "border-gray-300 hover:border-black"}`}
-                            value={accountHolder} 
-                            onChange={(e) => setAccountHolder(e.target.value)} />
+                            <input type='text'
+                                id='ahn'
+                                placeholder='As per bank record'
+                                className={`flex-1 border-b pb-2 text-sm focus:outline-none ${!isNameValid && accountHolder.length > 0 ? "border-red-400 focus:border-red-500" : "border-gray-300 hover:border-black"}`}
+                                value={accountHolder}
+                                onChange={(e) => setAccountHolder(e.target.value)} />
                         </div>
-                        {!isNameValid && accountHolder.length>0 &&  <p className='mt-1 text-xs text-red-500'>Minimum 3 characters required</p>}
+                        {!isNameValid && accountHolder.length > 0 && <p className='mt-1 text-xs text-red-500'>Minimum 3 characters required</p>}
 
                     </div>
 
@@ -100,16 +123,16 @@ function page() {
                                 <CreditCard />
                             </div>
 
-                            <input 
-                            type='text' 
-                            id='ahn' 
-                            placeholder='Enter account number ' 
-                            className={`flex-1 border-b pb-2 text-sm focus:outline-none ${!isAccountValid && accountNumber.length>0 ? "border-red-400 focus:border-red-500" : "border-gray-300 hover:border-black"}`}
-                            value={accountNumber} 
-                            onChange={(e) => setAccountNumber(e.target.value)} />
+                            <input
+                                type='text'
+                                id='ahn'
+                                placeholder='Enter account number '
+                                className={`flex-1 border-b pb-2 text-sm focus:outline-none ${!isAccountValid && accountNumber.length > 0 ? "border-red-400 focus:border-red-500" : "border-gray-300 hover:border-black"}`}
+                                value={accountNumber}
+                                onChange={(e) => setAccountNumber(e.target.value)} />
                         </div>
 
-                        {!isAccountValid && accountNumber.length>0 &&  <p className='mt-1 text-xs text-red-500'>Account number must be at least 9 digits</p>}
+                        {!isAccountValid && accountNumber.length > 0 && <p className='mt-1 text-xs text-red-500'>Account number must be at least 9 digits</p>}
 
                     </div>
 
@@ -121,15 +144,15 @@ function page() {
                                 <Landmark />
                             </div>
 
-                            <input 
-                            type='text' 
-                            id='ahn' 
-                            placeholder='HDFC001234' 
-                            className={`flex-1 border-b pb-2 text-sm focus:outline-none ${!isIfscValid && ifscCode.length>0 ? "border-red-400 focus:border-red-500" : "border-gray-300 hover:border-black"}`}
-                            value={ifscCode.toUpperCase()}
-                            onChange={(e) => setIfscCode(e.target.value)} />
+                            <input
+                                type='text'
+                                id='ahn'
+                                placeholder='HDFC001234'
+                                className={`flex-1 border-b pb-2 text-sm focus:outline-none ${!isIfscValid && ifscCode.length > 0 ? "border-red-400 focus:border-red-500" : "border-gray-300 hover:border-black"}`}
+                                value={ifscCode.toUpperCase()}
+                                onChange={(e) => setIfscCode(e.target.value)} />
                         </div>
-                        {!isIfscValid && ifscCode.length>0 &&  <p className='mt-1 text-xs text-red-500'>Invalid IFSC Code</p>}
+                        {!isIfscValid && ifscCode.length > 0 && <p className='mt-1 text-xs text-red-500'>Invalid IFSC Code</p>}
 
                     </div>
 
@@ -141,15 +164,15 @@ function page() {
                                 <Phone />
                             </div>
 
-                            <input 
-                            type='text' 
-                            id='ahn' 
-                            placeholder='10 digit mobile number' 
-                           className={`flex-1 border-b pb-2 text-sm focus:outline-none ${!isMobileValid && mobileNumber.length>0 ? "border-red-400 focus:border-red-500" : "border-gray-300 hover:border-black"}`} 
-                            value={mobileNumber} 
-                            onChange={(e) => setMobileNumber(e.target.value)} />
+                            <input
+                                type='text'
+                                id='ahn'
+                                placeholder='10 digit mobile number'
+                                className={`flex-1 border-b pb-2 text-sm focus:outline-none ${!isMobileValid && mobileNumber.length > 0 ? "border-red-400 focus:border-red-500" : "border-gray-300 hover:border-black"}`}
+                                value={mobileNumber}
+                                onChange={(e) => setMobileNumber(e.target.value)} />
                         </div>
-                        {!isMobileValid && mobileNumber.length>0 &&  <p className='mt-1 text-xs text-red-500'>Enter a valid 10-digit mobile number</p>}
+                        {!isMobileValid && mobileNumber.length > 0 && <p className='mt-1 text-xs text-red-500'>Enter a valid 10-digit mobile number</p>}
 
                     </div>
 
@@ -157,13 +180,13 @@ function page() {
                         <label htmlFor='ahn' className='text-xs font-semibold text-gray-500'>UPI ID (optional)</label>
                         <div className='flex items-center gap-2 mt-2'>
 
-                            <input 
-                            type='text' 
-                            id='ahn' 
-                            placeholder='name@upi' 
-                            className='flex-1 border-b pb-2 text-sm focus:outline-none border-gray-300 hover:border-black' 
-                            value={upi} 
-                            onChange={(e) => setUpi(e.target.value)} />
+                            <input
+                                type='text'
+                                id='ahn'
+                                placeholder='name@upi'
+                                className='flex-1 border-b pb-2 text-sm focus:outline-none border-gray-300 hover:border-black'
+                                value={upi}
+                                onChange={(e) => setUpi(e.target.value)} />
                         </div>
 
                     </div>
