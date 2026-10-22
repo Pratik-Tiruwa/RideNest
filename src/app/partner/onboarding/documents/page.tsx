@@ -98,6 +98,8 @@ function page() {
 
     setDocs((prev) => ({ ...prev, [doc]: file }))
   }
+
+  const isAllUploaded = docs.aadhar && docs.license && docs.rc; 
   return (
 
     <div className='min-h-screen bg-white flex items-center justify-center px-4'>
@@ -213,7 +215,7 @@ function page() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
           onClick={handleDocs}
-          disabled={loading}
+          disabled={!isAllUploaded || loading}
           className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold flex
         items-center justify-center gap-2 disabled:opacity-40 transition'
         >
