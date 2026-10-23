@@ -94,8 +94,8 @@ export async function POST(req: NextRequest) {
             {upsert:true, new:true} 
         )
 
-        if(user.partnerOnBoadringSteps<2){
-            user.partnerOnBoadringSteps=2
+        if(user.partnerOnBoardingSteps<2){
+            user.partnerOnBoardingSteps=2
         }
 
         await user.save(); 
