@@ -66,8 +66,8 @@ export async function POST(req: Request) {
             vehicleModel
         })
 
-        if (user.partnerOnBaordingSteps < 1) {
-            user.partnerOnBaordingSteps = 1
+        if (user.partnerOnBoardingSteps < 1) {
+            user.partnerOnBoardingSteps = 1
         }
         user.role = "partner"
         await user.save()
@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
         if (vehicle) {
             return Response.json(vehicle, { status: 200 })
         } else {
-            return null
+            return Response.json(null, { status: 200 })
         }
     } catch (error) {
         return Response.json({ message: `get vehicle error ${error}` },

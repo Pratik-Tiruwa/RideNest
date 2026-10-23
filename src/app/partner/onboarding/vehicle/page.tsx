@@ -43,7 +43,7 @@ function page() {
             try {
                 const { data } = await axios.get("/api/partner/onboarding/vehicle")
                 setVehicleType(data.type)
-                setVehicleNumber(data.number)  
+                setVehicleNumber(data.number)
                 setVehicleModel(data.vehicleModel)
 
             } catch (error: any) {
@@ -142,7 +142,7 @@ function page() {
                     </div>
 
                     <div>
-                        <label htmlFor='vm' className='text-xs font-semibold text-gray-500'>Vehicle Number</label>
+                        <label htmlFor='vm' className='text-xs font-semibold text-gray-500'>Vehicle Model</label>
                         <input
                             type='text'
                             onChange={(e) => setVehicleModel(e.target.value)}
