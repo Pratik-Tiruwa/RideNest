@@ -4,13 +4,22 @@ import axios from "axios"
 import Image from 'next/image'
 import { User } from 'lucide-react'
 
+type Stats = {
+    totalApprovedPartners: number
+    totalPartners: number
+    totalPendingPartners: number
+    totalRejectedPartners: number
+}
+
 function AdminDashboard() {
+
+    const [stats, setStats] = useState<Stats | null>(null)
 
     const handleGetData = async () => {
 
         try {
             const { data } = await axios.get("/api/admin/dashboard")
-            console.log(data)
+            setStats(data.stats)
         } catch (error) {
             console.log(error)
         }
@@ -44,6 +53,8 @@ function AdminDashboard() {
 
                 </div>
             </div>
+
+            
 
         </div>
     )
