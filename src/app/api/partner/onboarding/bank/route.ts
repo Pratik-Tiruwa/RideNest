@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         await user.save()
 
         return Response.json(
-            partnerBank, 
+            partnerBank,
             { status: 201 }
         )
 
@@ -81,11 +81,14 @@ export async function GET(req: NextRequest) {
         const partnerBank = await PartnerBank.findOne({ owner: user._id })
         if (partnerBank) {
             return Response.json(
-                {partnerBank, mobileNumber : user.mobileNumber},
+                {
+                    partnerBank: partnerBank || null,
+                    mobileNumber: user.mobileNumber || ""
+                },
                 { status: 200 }
             )
         } else {
-            return Response.json(null, { status: 200 })
+            return Response.json(null, { status: 200 }) 
         }
     } catch (error) {
         return Response.json(

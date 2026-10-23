@@ -50,22 +50,28 @@ function page() {
 
     useEffect(() => {
         const handleGetBank = async () => {
-             setLoading(true)
+            setLoading(true)
             try {
                 const { data } = await axios.get("/api/partner/onboarding/bank")
-                console.log(data) 
+                console.log(data)
 
-                setAccountHolder(data.partnerBank.accountHolder)
-                setAccountNumber(data.partnerBank.accountNumber)
-                setIfscCode(data.partnerBank.ifscCode)
-                setMobileNumber(data.mobileNumber)
-                setUpi(data.partnerBank.upi)
-                setLoading(false)
+                if (data) {
+                    if (data.partnerBank) {
+                        setAccountHolder(data.partnerBank.accountHolder || "")
+                        setAccountNumber(data.partnerBank.accountNumber || "")
+                        setIfscCode(data.partnerBank.ifscCode || "")
+                        setUpi(data.partnerBank.upi || "")
+                    }
+
+                    if (data.mobileNumber) {
+                        setMobileNumber(data.mobileNumber)
+                    }
+                }
             } catch (error: any) {
                 console.log(error)
+            } finally { 
                 setLoading(false)
             }
-
         }
 
         handleGetBank();
