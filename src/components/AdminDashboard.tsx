@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from 'react'
 import axios from "axios"
 import Image from 'next/image'
-import {CheckCircle2, Clock, User, Users, XCircle } from 'lucide-react'
+import {CheckCircle2, Clock, Truck, User, Users, Video, XCircle } from 'lucide-react'
 import Kpi from './Kpi'
+import TabButton from './TabButton'
 
 type Stats = {
     totalApprovedPartners: number
@@ -12,15 +13,22 @@ type Stats = {
     totalRejectedPartners: number
 }
 
+type Tab = "partner" | "kyc" | "vehicle"
+
 function AdminDashboard() {
 
     const [stats, setStats] = useState<Stats | null>(null)
+    const [activeTab, setActiveTab] = useState<Tab>("partner")
+    const [partnerReviews, setPartnerReviews] = useState<any>();
+    const [pendingKyc, setPendingKyc] = useState<any>();
+    const [vehicleReviews, setVehicleReviews] = useState<any>();
 
     const handleGetData = async () => {
 
         try {
             const { data } = await axios.get("/api/admin/dashboard")
             setStats(data.stats)
+            setPartnerReviews(data.pendingPartnerReviews)
         } catch (error) {
             console.log(error)
         }
@@ -60,8 +68,40 @@ function AdminDashboard() {
                 <div className='grid grid-cols-2 sm:grid-cols-4 gap-6'>
                     <Kpi label="Total Partners" value={stats?.totalPartners} icon={<Users />} variant={"totalPartners"} />
                     <Kpi label="Approved Partners" value={stats?.totalApprovedPartners} icon={<CheckCircle2 />} variant={"approved"} />
-                    <Kpi label="Pending Partners" value={stats?.totalPendingPartners} icon={<Clock />}  variant={"pending"} />
+                    <Kpi label="Pending Partners" value={stats?.totalPendingPartners} icon={<Clock />} variant={"pending"} />
                     <Kpi label="Rejected Partners" value={stats?.totalRejectedPartners} icon={<XCircle />} variant={"rejected"} />
+                </div>
+
+
+                <div className='bg-white rounded-2xl p-2 shadow-lg border border-gray-100 flex flex-wrap gap-2'>
+
+                    <TabButton
+                        active={activeTab == "partner"}
+                        count={partnerReviews?.length ?? 0}
+                        icon={<Users size={15} />}
+                        onClick={() => setActiveTab("partner")}
+                    >
+                        Pending Partner Reviews
+                    </TabButton>
+
+                    <TabButton
+                        active={activeTab == "kyc"}
+                        count={pendingKyc?.length ?? 0}
+                        icon={<Video size={15} />}
+                        onClick={() => setActiveTab("kyc")}
+                    >
+                        Pending Video KYC
+                    </TabButton>
+
+                    <TabButton
+                        active={activeTab == "vehicle"}
+                        count={vehicleReviews?.length ?? 0}
+                        icon={<Truck size={15} />}
+                        onClick={() => setActiveTab("vehicle")}
+                    >
+                        Pending Vehicle Reviews
+                    </TabButton>
+
                 </div>
 
             </main>
