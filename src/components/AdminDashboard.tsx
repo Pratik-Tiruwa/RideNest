@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react'
 import axios from "axios"
 import Image from 'next/image'
-import { User } from 'lucide-react'
+import {CheckCircle2, Clock, User, Users, XCircle } from 'lucide-react'
+import Kpi from './Kpi'
 
 type Stats = {
     totalApprovedPartners: number
@@ -54,7 +55,16 @@ function AdminDashboard() {
                 </div>
             </div>
 
-            
+            <main className='max-w-7xl mx-auto px-6 py-12 space-y-16'>
+
+                <div className='grid grid-cols-2 sm:grid-cols-4 gap-6'>
+                    <Kpi label="Total Partners" value={stats?.totalPartners} icon={<Users />} variant={"totalPartners"} />
+                    <Kpi label="Approved Partners" value={stats?.totalApprovedPartners} icon={<CheckCircle2 />} variant={"approved"} />
+                    <Kpi label="Pending Partners" value={stats?.totalPendingPartners} icon={<Clock />}  variant={"pending"} />
+                    <Kpi label="Rejected Partners" value={stats?.totalRejectedPartners} icon={<XCircle />} variant={"rejected"} />
+                </div>
+
+            </main>
 
         </div>
     )
