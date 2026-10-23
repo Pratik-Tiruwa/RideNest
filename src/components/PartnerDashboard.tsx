@@ -1,7 +1,9 @@
 'use client'
 import { RootState } from '@/redux/store'
 import React, { useEffect, useState } from 'react'
-import { UseSelector, useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import axios from 'axios'
+import { setUserData } from '@/redux/userSlice'
 import { motion } from "motion/react"
 import { Check, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -57,14 +59,14 @@ function PartnerDashboard() {
 
         <div className='bg-white rounded-3xl p-10 shadow-xl border overflow-x-auto'>
 
-          <div className='relative min-w-[800px]'>
+          <div className='relative min-w-200'>
 
-            <div className='absolute top-7 left-0 w-full h-[3px] bg-gray-200 rounded-full' />
+            <div className='absolute top-7 left-0 w-full h-0.75 bg-gray-200 rounded-full' />
 
             <motion.div
               animate={{ width: `${progressPercentage}%` }}
               transition={{ duration: 0.6 }}
-              className='absolute top-7 left-0 h-[3px] bg-black rounded-full'
+              className='absolute top-7 left-0 h-0.75 bg-black rounded-full'
             />
 
 
