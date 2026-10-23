@@ -17,13 +17,21 @@ export default async function Home() {
 
   return (
     <main className="w-full min-h-screen bg-white">
-      <Navbar />
+
       {user?.role == "partner"
-        ? <PartnerDashboard />
+        ?
+        <>
+          <Navbar />
+          <PartnerDashboard />
+        </>
         : (
           user?.role == "admin"
             ? <AdminDashboard />
-            : <PublicHome />
+            :
+            <>
+              <Navbar />
+              <PublicHome />
+            </>
         )
       }
       <Footer />
