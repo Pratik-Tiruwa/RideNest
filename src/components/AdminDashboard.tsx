@@ -2,9 +2,12 @@
 import React, { useEffect, useState } from 'react'
 import axios from "axios"
 import Image from 'next/image'
-import {CheckCircle2, Clock, Truck, User, Users, Video, XCircle } from 'lucide-react'
+import { CheckCircle2, Clock, Truck, User, Users, Video, XCircle } from 'lucide-react'
 import Kpi from './Kpi'
 import TabButton from './TabButton'
+import { AnimatePresence } from 'motion/react'
+import { motion } from "motion/react"
+import ContentList from './ContentList'
 
 type Stats = {
     totalApprovedPartners: number
@@ -103,6 +106,25 @@ function AdminDashboard() {
                     </TabButton>
 
                 </div>
+
+
+                <AnimatePresence mode='wait'>
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className='space-y-3'
+                    >
+
+                        {activeTab == "partner" && <ContentList data={partnerReviews ?? []} type={"partner"} />}
+                        {activeTab == "kyc" && <ContentList data={pendingKyc ?? []} type={"kyc"} />}
+                        {activeTab == "vehicle" && <ContentList data={vehicleReviews ?? []} type={"vehicle"} />}
+
+                    </motion.div>
+
+                </AnimatePresence>
 
             </main>
 
