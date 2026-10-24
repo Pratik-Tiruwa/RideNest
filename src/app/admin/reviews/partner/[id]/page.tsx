@@ -1,14 +1,18 @@
 'use client'
 import { IUser } from '@/models/user.model'
 import axios from 'axios'
-import { ArrowLeft, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { ArrowLeft, Car, CheckCircle, Clock, FileText, XCircle } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
+import AnimatedCard from '@/components/AnimatedCard'
+import { IVehicle } from '@/models/vehicle.model'
+
 
 function page() {
     const { id } = useParams()
     const [data, setData] = useState<IUser | null>(null)
     const [loading, setLoading] = useState<boolean>(true)
+    const [vehilceDetails, setVehicleDetails] = useState<IVehicle | null>(null)
     const router = useRouter()
 
 
@@ -17,6 +21,7 @@ function page() {
             const { data } = await axios.get(`/api/admin/reviews/partner/${id}`)
             // console.log(data) 
             setData(data.partner)
+            setVehicleDetails(data.vehicle)
             setLoading(false)
         }
         catch (error) {
@@ -42,7 +47,7 @@ function page() {
 
             <div className='sticky top-0 z-40 backdrop-blur-xl bg-white/70 border-b'>
                 <div className='max-w-7xl mx-auto px-4 h-16 flex items-center gap-4'>
-                    <button className='w-10 h-10 rounded-full border flex items-center justify-center hover:bg-gray-100 transition' onClick={()=>router.back()}> 
+                    <button className='w-10 h-10 rounded-full border flex items-center justify-center hover:bg-gray-100 transition' onClick={() => router.back()}>
                         <ArrowLeft size={18} />
                     </button>
 
@@ -76,6 +81,30 @@ function page() {
                     </div>
                 </div>
             </div>
+
+            <main className='max-w-7xl mx-auto px-4 py-12 grid lg:grid-cols-3 gap-10'>
+
+                <div className='lg:col-span-2 space-y-8'>
+                    <AnimatedCard title="Vehicle Details" icon={<Car size={18} />}>
+
+                        <div className='flex justify-between text-sm'>
+                            <span className='text-gray-500'>Vehicle Type</span>
+                            <span className='font-semibold'>{vehilceDetails?.type || "-"}</span>
+                        </div>
+
+                        <div className='flex justify-between text-sm'>
+                            <span className='text-gray-500'>Registration Number</span>
+                            <span className='font-semibold'>{vehilceDetails?.number || "-"}</span>
+                        </div>
+
+                        <div className='flex justify-between text-sm'>
+                            <span className='text-gray-500'>Vehicle Model</span>
+                            <span className='font-semibold'>{vehilceDetails?.vehicleModel || "-"}</span>
+                        </div>
+                    </AnimatedCard>
+
+                </div>
+            </main>
 
         </div>
     )
