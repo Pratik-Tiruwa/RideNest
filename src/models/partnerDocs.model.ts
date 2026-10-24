@@ -1,10 +1,10 @@
 import mongoose from "mongoose" 
 
-interface IPartnerDocs { 
+export interface IPartnerDocs { 
     owner : mongoose.Types.ObjectId, 
     aadharUrl : string, 
     rcUrl : string, 
-    license : string, 
+    licenseUrl : string, 
     status : "approved" | "pending" | "rejected", 
     rejectionReason?: string, 
     createdAt : Date, 
@@ -17,11 +17,11 @@ const docsSchema = new mongoose.Schema<IPartnerDocs>({
     owner : { 
         type : mongoose.Types.ObjectId, 
         ref : "User", 
-        require : true
+        required : true
     }, 
     aadharUrl : String, 
     rcUrl : String, 
-    license : String,
+    licenseUrl : String,
 
     status : { 
         type : String, 

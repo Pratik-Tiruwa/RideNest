@@ -6,6 +6,8 @@ import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import AnimatedCard from '@/components/AnimatedCard'
 import { IVehicle } from '@/models/vehicle.model'
+import DocPreview from '@/components/DocPreview'
+import { IPartnerDocs } from '@/models/partnerDocs.model'
 
 
 function page() {
@@ -13,6 +15,7 @@ function page() {
     const [data, setData] = useState<IUser | null>(null)
     const [loading, setLoading] = useState<boolean>(true)
     const [vehilceDetails, setVehicleDetails] = useState<IVehicle | null>(null)
+    const [partnerDocs, setPartnerDocs] = useState<IPartnerDocs | null>(null)
     const router = useRouter()
 
 
@@ -22,6 +25,7 @@ function page() {
             // console.log(data) 
             setData(data.partner)
             setVehicleDetails(data.vehicle)
+            setPartnerDocs(data.documents)
             setLoading(false)
         }
         catch (error) {
@@ -103,7 +107,17 @@ function page() {
                         </div>
                     </AnimatedCard>
 
+                    <AnimatedCard title="Documents" icon={<FileText size={18} />}>
+                    <div className='grid grid-cols-1 sm:grid-cols-3 gap-6'>
+                        <DocPreview label={"Aadhaar"} url={partnerDocs?.aadharUrl} />
+                        <DocPreview label={"Registration Certificate"} url={partnerDocs?.rcUrl} />
+                        <DocPreview label={"Driving License"} url={partnerDocs?.licenseUrl} />
+                    </div>
+                </AnimatedCard>
+
                 </div>
+
+                
             </main>
 
         </div>
