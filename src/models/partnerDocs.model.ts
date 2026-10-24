@@ -33,6 +33,6 @@ const docsSchema = new mongoose.Schema<IPartnerDocs>({
 
 },  {timestamps : true})
 
-const PartnerDocs = mongoose.models.docsSchema || mongoose.model("PartnerDocs", docsSchema) 
+const PartnerDocs = mongoose.models.PartnerDocs || mongoose.model("PartnerDocs", docsSchema) 
 
 export default PartnerDocs;
