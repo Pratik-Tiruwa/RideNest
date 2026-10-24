@@ -42,9 +42,9 @@ function page() {
 
             try {
                 const { data } = await axios.get("/api/partner/onboarding/vehicle")
-                setVehicleType(data.type)
-                setVehicleNumber(data.number)
-                setVehicleModel(data.vehicleModel)
+                setVehicleType(data?.type)
+                setVehicleNumber(data?.number)
+                setVehicleModel(data?.vehicleModel)
 
             } catch (error: any) {
                 console.log(error)
