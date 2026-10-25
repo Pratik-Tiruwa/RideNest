@@ -9,7 +9,7 @@ import { IVehicle } from '@/models/vehicle.model'
 import DocPreview from '@/components/DocPreview'
 import { IPartnerDocs } from '@/models/partnerDocs.model'
 import { IPartnerBank } from '@/models/partnerBank.model'
-import { motion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 
 
 function page() {
@@ -19,6 +19,8 @@ function page() {
     const [vehilceDetails, setVehicleDetails] = useState<IVehicle | null>(null)
     const [partnerDocs, setPartnerDocs] = useState<IPartnerDocs | null>(null)
     const [partnerBank, setPartnerBank] = useState<IPartnerBank | null>(null)
+    const [showApprove, setShowApprove] = useState<boolean>(false)  
+    const [showReject, setShowReject] = useState<boolean>(false)  
     const router = useRouter()
 
 
@@ -166,12 +168,14 @@ function page() {
                             <div className='flex flex-col gap-4'>
                                 <button
                                     className='py-3 rounded-2xl bg-linear-to-r from-black to-gray-800 text-white font-semibold hover:opacity-90 transition'
+                                    onClick={()=>setShowApprove(true)}
                                 >
                                     Approve
                                 </button>
 
                                 <button
                                 className='py-3 rounded-2xl border font-semibold hover:bg-gray-100 transition'
+                                onClick={()=>setShowReject(true)}
                                 >
                                     Reject
                                 </button>
@@ -182,9 +186,71 @@ function page() {
                     )}
                 </div>
 
+            </main> 
+
+             
+                <AnimatePresence>
+                    {showApprove && ( 
+                        <motion.div
+                        className='fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4'
+                        initial={{ opacity : 0}}
+                        animate = {{ opacity : 1}}
+                        exit={{ opacity : 0}}
+                        >
+
+                            <motion.div
+                            initial = {{ scale : 0.9}}
+                            animate = {{ scale : 1}}
+                            className='bg-white rounded-3xl p-6 w-full max-w-sm'
+                            >
+                                <h2 className='text-lg font-bold'>Approve Partner ? </h2>
+                                <p className='text-sm text-gray-500 mt-2'>Confirm all information has been verified.</p>
+
+                                <div className='flex gap-3 mt-6'>
+                                    <button className='flex-1 py-2 rounded-xl border' onClick={()=>setShowApprove(false)}>Cancel</button>
+                                    <button className='flex-1 py-2 rounded-xl bg-black text-white'>Yes, Approve</button>
+                                </div>
+
+                            </motion.div>
+
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
 
-            </main>
+                <AnimatePresence> 
+                    {showReject && ( 
+                         <motion.div
+                        className='fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4'
+                        initial={{ opacity : 0}}
+                        animate = {{ opacity : 1}}
+                        exit={{ opacity : 0}}
+                        >
+
+                            <motion.div
+                            initial = {{ scale : 0.9}}
+                            animate = {{ scale : 1}}
+                            className='bg-white rounded-3xl p-6 w-full max-w-sm'
+                            >
+                                <h2 className='text-lg font-bold'>Reject Partner ? </h2>
+                                <p className='text-sm text-gray-500 mt-2'>
+                                    <textarea 
+                                    placeholder='Enter rejection reason (required)' 
+                                    className='w-full mt-3 border rounded-xl p-3 text-sm'
+                                    />
+                                </p>
+
+                                <div className='flex gap-3 mt-6'>
+                                    <button className='flex-1 py-2 rounded-xl border' onClick={()=>setShowReject(false)}>Cancel</button>
+                                    <button className='flex-1 py-2 rounded-xl bg-black text-white'>Reject</button>
+                                </div>
+
+                            </motion.div>
+
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            
 
         </div>
     )
