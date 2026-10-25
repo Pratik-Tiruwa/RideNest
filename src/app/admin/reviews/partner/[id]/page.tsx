@@ -1,7 +1,7 @@
 'use client'
 import { IUser } from '@/models/user.model'
 import axios from 'axios'
-import { ArrowLeft, Car, CheckCircle, Clock, FileText, Landmark, XCircle } from 'lucide-react'
+import { ArrowLeft, Car, CheckCircle, Clock, FileText, Landmark, ShieldCheck, XCircle } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import AnimatedCard from '@/components/AnimatedCard'
@@ -9,6 +9,7 @@ import { IVehicle } from '@/models/vehicle.model'
 import DocPreview from '@/components/DocPreview'
 import { IPartnerDocs } from '@/models/partnerDocs.model'
 import { IPartnerBank } from '@/models/partnerBank.model'
+import { motion } from "motion/react"
 
 
 function page() {
@@ -142,9 +143,45 @@ function page() {
                             <span className='text-gray-500'>UPI</span>
                             <span className='font-semibold'>{partnerBank?.upi || "-"}</span>
                         </div>
-                        
+
                     </AnimatedCard>
+
+                    {data?.partnerStatus == "pending" && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className='bg-white rounded-4xl p-8 shadow-xl space-y-6'
+                        >
+
+                            <div className='flex items-center gap-2 font-semibold'>
+                                <ShieldCheck size={18} />
+                                Admin Check
+                            </div>
+
+                            <p className='text-sm text-gray-500'>
+                                Verify documents carefully before applying
+                            </p>
+
+
+                            <div className='flex flex-col gap-4'>
+                                <button
+                                    className='py-3 rounded-2xl bg-linear-to-r from-black to-gray-800 text-white font-semibold hover:opacity-90 transition'
+                                >
+                                    Approve
+                                </button>
+
+                                <button
+                                className='py-3 rounded-2xl border font-semibold hover:bg-gray-100 transition'
+                                >
+                                    Reject
+                                </button>
+                            </div>
+
+
+                        </motion.div>
+                    )}
                 </div>
+
 
 
             </main>
