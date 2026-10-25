@@ -1,13 +1,14 @@
 'use client'
 import { IUser } from '@/models/user.model'
 import axios from 'axios'
-import { ArrowLeft, Car, CheckCircle, Clock, FileText, XCircle } from 'lucide-react'
+import { ArrowLeft, Car, CheckCircle, Clock, FileText, Landmark, XCircle } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import AnimatedCard from '@/components/AnimatedCard'
 import { IVehicle } from '@/models/vehicle.model'
 import DocPreview from '@/components/DocPreview'
 import { IPartnerDocs } from '@/models/partnerDocs.model'
+import { IPartnerBank } from '@/models/partnerBank.model'
 
 
 function page() {
@@ -16,6 +17,7 @@ function page() {
     const [loading, setLoading] = useState<boolean>(true)
     const [vehilceDetails, setVehicleDetails] = useState<IVehicle | null>(null)
     const [partnerDocs, setPartnerDocs] = useState<IPartnerDocs | null>(null)
+    const [partnerBank, setPartnerBank] = useState<IPartnerBank | null>(null)
     const router = useRouter()
 
 
@@ -26,6 +28,7 @@ function page() {
             setData(data.partner)
             setVehicleDetails(data.vehicle)
             setPartnerDocs(data.documents)
+            setPartnerBank(data.bank)
             setLoading(false)
         }
         catch (error) {
@@ -108,16 +111,42 @@ function page() {
                     </AnimatedCard>
 
                     <AnimatedCard title="Documents" icon={<FileText size={18} />}>
-                    <div className='grid grid-cols-1 sm:grid-cols-3 gap-6'>
-                        <DocPreview label={"Aadhaar"} url={partnerDocs?.aadharUrl} />
-                        <DocPreview label={"Registration Certificate"} url={partnerDocs?.rcUrl} />
-                        <DocPreview label={"Driving License"} url={partnerDocs?.licenseUrl} />
-                    </div>
-                </AnimatedCard>
+                        <div className='grid grid-cols-1 sm:grid-cols-3 gap-6'>
+                            <DocPreview label={"Aadhaar"} url={partnerDocs?.aadharUrl} />
+                            <DocPreview label={"Registration Certificate"} url={partnerDocs?.rcUrl} />
+                            <DocPreview label={"Driving License"} url={partnerDocs?.licenseUrl} />
+                        </div>
+                    </AnimatedCard>
 
                 </div>
 
-                
+                <div className='space-y-8'>
+                    <AnimatedCard title={"Bank Details"} icon={<Landmark size={18} />}>
+
+                        <div className='flex justify-between text-sm'>
+                            <span className='text-gray-500'>Account Holder</span>
+                            <span className='font-semibold'>{partnerBank?.accountHolder || "-"}</span>
+                        </div>
+
+                        <div className='flex justify-between text-sm'>
+                            <span className='text-gray-500'>Account Number</span>
+                            <span className='font-semibold'>{partnerBank?.accountNumber || "-"}</span>
+                        </div>
+
+                        <div className='flex justify-between text-sm'>
+                            <span className='text-gray-500'>IFSC Code</span>
+                            <span className='font-semibold'>{partnerBank?.ifscCode || "-"}</span>
+                        </div>
+
+                        <div className='flex justify-between text-sm'>
+                            <span className='text-gray-500'>UPI</span>
+                            <span className='font-semibold'>{partnerBank?.upi || "-"}</span>
+                        </div>
+                        
+                    </AnimatedCard>
+                </div>
+
+
             </main>
 
         </div>
