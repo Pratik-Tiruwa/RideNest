@@ -1,7 +1,7 @@
 'use client'
 import { IUser } from '@/models/user.model'
 import axios from 'axios'
-import { ArrowLeft, Car, CheckCircle, Clock, FileText, Landmark, ShieldCheck, XCircle } from 'lucide-react'
+import { ArrowLeft, Car, CheckCircle, CircleDashed, Clock, FileText, Landmark, ShieldCheck, XCircle } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import AnimatedCard from '@/components/AnimatedCard'
@@ -22,6 +22,8 @@ function page() {
     const [showApprove, setShowApprove] = useState<boolean>(false)
     const [showReject, setShowReject] = useState<boolean>(false)
     const [rejectionReason, setRejectionReason] = useState("")
+    const [approveLoading, setApproveLoading] = useState<boolean>(false)
+    const [rejectLoading, setRejectLoading] = useState<boolean>(false)
     const router = useRouter()
 
 
@@ -54,22 +56,30 @@ function page() {
     }
 
     const handleApprove = async () => {
+        setApproveLoading(true)
         try {
             const { data } = await axios.get(`/api/admin/reviews/partner/${id}/approve`)
             console.log(data)
+            setApproveLoading(false)
+            router.push("/")
         } catch (error) {
             console.log(error)
+            setApproveLoading(false)
         }
     }
 
     const handleReject = async () => {
+        setRejectLoading(true)
         try {
             const { data } = await axios.post(`/api/admin/reviews/partner/${id}/reject`, {
                 rejectionReason
             })
             console.log(data)
+            setRejectLoading(false)
+            router.push("/")
         } catch (error) {
             console.log(error)
+            setRejectLoading(false)
         }
     }
 
@@ -229,9 +239,10 @@ function page() {
 
                             <div className='flex gap-3 mt-6'>
                                 <button className='flex-1 py-2 rounded-xl border' onClick={() => setShowApprove(false)}>Cancel</button>
-                                <button className='flex-1 py-2 rounded-xl bg-black text-white'
+                                <button className='flex-1 flex items-center justify-center py-2 rounded-xl bg-black text-white'
                                     onClick={handleApprove}
-                                >Yes, Approve</button>
+                                    disabled={approveLoading}
+                                >{approveLoading ? <CircleDashed className='text-white animate-spin'/> :  "Yes, Approve"}</button>
                             </div>
 
                         </motion.div>
@@ -267,9 +278,10 @@ function page() {
 
                             <div className='flex gap-3 mt-6'>
                                 <button className='flex-1 py-2 rounded-xl border' onClick={() => setShowReject(false)}>Cancel</button>
-                                <button className='flex-1 py-2 rounded-xl bg-black text-white'
+                                <button className='flex-1 py-2 flex items-center justify-center rounded-xl bg-black text-white'
                                     onClick={handleReject}
-                                >Reject</button>
+                                    disabled={rejectLoading}
+                                >{rejectLoading ? <CircleDashed className='text-white animate-spin'/> :  "Reject"}</button>
                             </div>
 
                         </motion.div>
