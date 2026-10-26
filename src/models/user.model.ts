@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-type VideoKyStatus =
+type VideoKycStatus =
     "not_required"
     | "pending" 
     | "in_progress"
@@ -20,7 +20,7 @@ export interface IUser extends Document {
     mobileNumber?:string,
     partnerStatus: "pending" | "approved" | "rejected", 
     rejectionReason? : string
-    videoKycStatus : VideoKyStatus
+    videoKycStatus : VideoKycStatus
     videoKycRoomId : string, 
     videoKycRejectionReason : string,
     createdAt: Date;
