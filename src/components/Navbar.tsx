@@ -45,7 +45,7 @@ function Navbar() {
         <div className='max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between'>
           <Link href="/" className="flex items-center">
             <Image
-              src="/logo.png"
+              src="/logo_primary.png"
               alt="RideNest Logo"
               width={200}
               height={60}

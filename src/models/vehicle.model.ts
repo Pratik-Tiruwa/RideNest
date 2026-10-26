@@ -8,7 +8,7 @@ type vehicleType =
     "auto" 
 
 
-interface IVehicle { 
+export interface IVehicle {  
     owner: mongoose.Types.ObjectId
     type : vehicleType, 
     vehicleModel : string, 

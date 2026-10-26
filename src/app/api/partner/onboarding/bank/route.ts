@@ -42,10 +42,10 @@ export async function POST(req: NextRequest) {
 
         )
         user.mobileNumber = mobileNumber
-        if (user.partnerOnBoardingSteps < 3) {
+       
             user.partnerOnBoardingSteps = 3
-        }
 
+        user.partnerStatus="pending"
         await user.save()
 
         return Response.json(
@@ -81,11 +81,14 @@ export async function GET(req: NextRequest) {
         const partnerBank = await PartnerBank.findOne({ owner: user._id })
         if (partnerBank) {
             return Response.json(
-                partnerBank,
+                {
+                    partnerBank: partnerBank || null,
+                    mobileNumber: user.mobileNumber || ""
+                },
                 { status: 200 }
             )
         } else {
-            return null
+            return Response.json(null, { status: 200 }) 
         }
     } catch (error) {
         return Response.json(
