@@ -5,9 +5,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import axios from 'axios'
 import { setUserData } from '@/redux/userSlice'
 import { motion } from "motion/react"
-import { Check, Lock } from 'lucide-react'
+import { Check, Clock, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import RejectionCard from './RejectionCard'
+import StatusCard from './StatusCard'
 
 type Step = {
   id: number,
@@ -129,6 +130,17 @@ function PartnerDashboard() {
             onAction={() => { 
               router.push("/partner/onboarding/vehicle")
             }}
+            />
+          )          
+        }
+
+
+        { 
+          activeStep==4 && userData?.partnerStatus === "pending" && ( 
+            <StatusCard
+            icon={<Clock size={18}/>} 
+            title={"Documents under review"}
+            desc={"Admin is verifying your documents." }
             />
           )
         }
