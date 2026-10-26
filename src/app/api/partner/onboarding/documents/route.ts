@@ -34,6 +34,21 @@ export async function POST(req: NextRequest) {
             )
         }
 
+        const aadharBuffer = Buffer.from(await aadhar.arrayBuffer());
+        const licenseBuffer = Buffer.from(await license.arrayBuffer());
+        const rcBuffer = Buffer.from(await rc.arrayBuffer());
+
+        if (
+            aadharBuffer.equals(licenseBuffer) ||
+            aadharBuffer.equals(rcBuffer) ||
+            licenseBuffer.equals(rcBuffer)
+        ) {
+            return Response.json(
+                { message: "Duplicate documents detected. Please upload distinct documents for Aadhaar, Driving License, and Vehicle RC." },
+                { status: 400 }
+            )
+        }
+
         const updatePayload: any = {
             status: "pending"
         }
@@ -79,9 +94,12 @@ export async function POST(req: NextRequest) {
             {upsert:true, new:true} 
         )
 
-        if(user.partnerOnBoadringSteps<2){
-            user.partnerOnBoadringSteps=2
+        if(user.partnerOnBoardingSteps<2){
+            user.partnerOnBoardingSteps=2
+        } else { 
+            user.partnerOnBoardingSteps=3
         }
+        user.partnerStatus="pending"
 
         await user.save(); 
 

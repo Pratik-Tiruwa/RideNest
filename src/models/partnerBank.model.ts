@@ -1,6 +1,6 @@
 import mongoose from "mongoose" 
 
-interface IPartnerBank{ 
+export interface IPartnerBank{ 
     owner : mongoose.Types.ObjectId, 
     accountHolder : string, 
     accountNumber : string, 
@@ -43,6 +43,6 @@ const bankSchema = new mongoose.Schema<IPartnerBank>({
 
 },  {timestamps : true})
 
-const PartnerBank = mongoose.models.bankSchema || mongoose.model("PartnerBank", bankSchema) 
+const PartnerBank = mongoose.models.PartnerBank || mongoose.model("PartnerBank", bankSchema) 
 
 export default PartnerBank;

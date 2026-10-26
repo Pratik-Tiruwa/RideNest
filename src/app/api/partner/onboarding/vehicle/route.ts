@@ -35,14 +35,7 @@ export async function POST(req: Request) {
 
 
         const vehicleNumber = number.toUpperCase();
-        const duplicate = await Vehicle.findOne({ number: vehicleNumber })
 
-        if (duplicate) {
-            return Response.json(
-                { message: "Vehicle Already Resgistered" },
-                { status: 400 }
-            )
-        }
 
 
         let vehicle = await Vehicle.findOne({ owner: user._id })
@@ -53,9 +46,30 @@ export async function POST(req: Request) {
                 vehicle.vehicleModel = vehicleModel
             vehicle.status = "pending"
             await vehicle.save()
+            if(user.partnerOnBoardingSteps < 2) { 
+                user.partnerOnBoardingSteps=2
+                user.partnerStatus = "pending"
+                await user.save()
+            } else { 
+                user.partnerOnBoardingSteps=3 
+                user.partnerStatus = "pending"
+                await user.save()
+            } 
+
+
 
             return Response.json(vehicle, { status: 200 })
         }
+
+        const duplicate = await Vehicle.findOne({ number: vehicleNumber })
+
+        if (duplicate) {
+            return Response.json(
+                { message: "Vehicle Already Resgistered" },
+                { status: 400 }
+            )
+        }
+
         vehicle = await Vehicle.create({
             owner: user._id,
             type,
@@ -63,10 +77,12 @@ export async function POST(req: Request) {
             vehicleModel
         })
 
-        if (user.partnerOnBaordingSteps < 1) {
-            user.partnerOnBaordingSteps = 1
+        if (user.partnerOnBoardingSteps < 1) {
+            user.partnerOnBoardingSteps = 1
         }
+
         user.role = "partner"
+        user.partnerStatus = "pending"
         await user.save()
 
         return Response.json(vehicle, { status: 201 })
@@ -100,7 +116,7 @@ export async function GET(req: NextRequest) {
         if (vehicle) {
             return Response.json(vehicle, { status: 200 })
         } else {
-            return null
+            return Response.json(null, { status: 200 })
         }
     } catch (error) {
         return Response.json({ message: `get vehicle error ${error}` },

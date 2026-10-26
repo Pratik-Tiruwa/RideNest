@@ -7,6 +7,32 @@ import axios from 'axios'
 
 
 type docsType = "aadhar" | "license" | "rc"
+
+const docLabels: Record<docsType, string> = {
+  aadhar: "Aadhaar / ID Proof",
+  license: "Driving License",
+  rc: "Vehicle RC",
+};
+
+const areFilesEqual = async (file1: File, file2: File): Promise<boolean> => {
+  if (file1 === file2) return true;
+  if (file1.name === file2.name && file1.size === file2.size && file1.lastModified === file2.lastModified) {
+    return true;
+  }
+  if (file1.size === file2.size) {
+    const buf1 = await file1.arrayBuffer();
+    const buf2 = await file2.arrayBuffer();
+    if (buf1.byteLength !== buf2.byteLength) return false;
+    const v1 = new Uint8Array(buf1);
+    const v2 = new Uint8Array(buf2);
+    for (let i = 0; i < v1.length; i++) {
+      if (v1[i] !== v2[i]) return false;
+    }
+    return true;
+  }
+  return false;
+};
+
 function page() {
   const router = useRouter()
   const [docs, setDocs] = useState<Record<docsType, File | null>>({
@@ -27,6 +53,17 @@ function page() {
         setLoading(false)
         return
       }
+
+      const isAadharLicenseDup = await areFilesEqual(docs.aadhar, docs.license);
+      const isAadharRcDup = await areFilesEqual(docs.aadhar, docs.rc);
+      const isLicenseRcDup = await areFilesEqual(docs.license, docs.rc);
+
+      if (isAadharLicenseDup || isAadharRcDup || isLicenseRcDup) {
+        setError("Duplicate documents are not allowed. Please upload unique documents for Aadhaar, Driving License, and Vehicle RC.")
+        setLoading(false)
+        return
+      }
+
       formdata.append('aadhar', docs.aadhar)
       formdata.append('license', docs.license)
       formdata.append('rc', docs.rc)
@@ -40,12 +77,29 @@ function page() {
     }
   }
 
-  const handleImage = (doc: docsType, file: File | null) => {
+  const handleImage = async (doc: docsType, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null
     if (!file) {
       return
     }
+
+    setError("")
+
+    for (const [key, existingFile] of Object.entries(docs) as [docsType, File | null][]) {
+      if (key !== doc && existingFile) {
+        const isDuplicate = await areFilesEqual(file, existingFile)
+        if (isDuplicate) {
+          setError(`Duplicate document detected! You have already uploaded this file for ${docLabels[key]}. Please upload a distinct document.`)
+          e.target.value = ""
+          return
+        }
+      }
+    }
+
     setDocs((prev) => ({ ...prev, [doc]: file }))
   }
+
+  const isAllUploaded = docs.aadhar && docs.license && docs.rc; 
   return (
 
     <div className='min-h-screen bg-white flex items-center justify-center px-4'>
@@ -83,10 +137,17 @@ function page() {
             </div>
 
             <div>
-              <span className='text-xs text-gray-400'>Upload</span>
-              <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+              {docs.aadhar
+                ? <span className='text-xs font-medium text-green-600'>Uploaded</span>
+                :
+                <div>
+                  <span className='text-xs text-gray-400'>Upload</span>
+                  <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+                </div>
+              }
             </div>
-            <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("aadhar", e.target.files?.[0] || null)} />
+
+            <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("aadhar", e)} />
 
           </motion.label>
 
@@ -101,11 +162,17 @@ function page() {
             </div>
 
             <div>
-              <span className='text-xs text-gray-400'>Upload</span>
-              <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+              {docs.license
+                ? <span className='text-xs text-green-600 font-medium'>Uploaded</span>
+                :
+                <div>
+                  <span className='text-xs text-gray-400'>Upload</span>
+                  <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+                </div>
+              }
             </div>
 
-            <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("license", e.target.files?.[0] || null)} />
+            <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("license", e)} />
 
           </motion.label>
 
@@ -120,11 +187,16 @@ function page() {
             </div>
 
             <div>
-              <span className='text-xs text-gray-400'>Upload</span>
-              <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+              {docs.rc
+                ? <span className='text-xs text-green-600 font-medium'>Uploaded</span>
+                : <div>
+                    <span className='text-xs text-gray-400'>Upload</span>
+                    <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+                  </div>
+              }
             </div>
 
-            <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("rc", e.target.files?.[0] || null)} />
+            <input type='file' hidden accept='image/*,.pdf' onChange={(e) => handleImage("rc", e)} />
 
           </motion.label>
 
@@ -134,7 +206,7 @@ function page() {
 
         <div className='mt-6 flex items-start gap-3 text-xs text-gray-500'>
           <FileCheck size={16} className='mt-0.5' />
-          <p>Documents are securely stored and manually verified by out team </p>
+          <p>Documents are securely stored and manually verified by our team </p>
         </div>
 
         {error && <p className='text-red-500 mt-4'>*{error}</p>}
@@ -143,7 +215,7 @@ function page() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
           onClick={handleDocs}
-          disabled={loading}
+          disabled={!isAllUploaded || loading}
           className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold flex
         items-center justify-center gap-2 disabled:opacity-40 transition'
         >
