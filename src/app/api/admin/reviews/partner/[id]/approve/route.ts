@@ -3,7 +3,6 @@ import connectDb from "@/lib/db";
 import PartnerBank from "@/models/partnerBank.model";
 import PartnerDocs from "@/models/partnerDocs.model";
 import User from "@/models/user.model";
-import { connect } from "http2";
 import { NextRequest } from "next/server";
 
 export async function GET(
@@ -48,6 +47,7 @@ export async function GET(
         }
 
         partner.partnerStatus = "approved"
+        partner.videoKycStatus = "pending" 
         partner.partnerOnBoardingSteps=4
         await partner.save()
 
