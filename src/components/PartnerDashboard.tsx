@@ -166,7 +166,7 @@ function PartnerDashboard() {
                 title={"Admin Started Video KYC"}
                 button={"Join Call"}
                 onClick={
-                  () => router.push(`/api/video-kyc/${userData.videoKycRoomId}`)
+                  () => router.push(`/video-kyc/${userData.videoKycRoomId}`)
                 }
               />
             ) : (
