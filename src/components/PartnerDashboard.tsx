@@ -5,10 +5,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import axios from 'axios'
 import { setUserData } from '@/redux/userSlice'
 import { motion } from "motion/react"
-import { Check, Clock, Lock } from 'lucide-react'
+import { Check, Clock, Lock, Video } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import RejectionCard from './RejectionCard'
 import StatusCard from './StatusCard'
+import ActionCard from './ActionCard'
 
 type Step = {
   id: number,
@@ -41,8 +42,8 @@ function PartnerDashboard() {
   }, [userData])
 
 
-  const goToStep = (step:Step) => { 
-    if(step.route && step.id <= activeStep) { 
+  const goToStep = (step: Step) => {
+    if (step.route && step.id <= activeStep) {
       router.push(step.route)
     }
   }
@@ -84,7 +85,7 @@ function PartnerDashboard() {
                   <motion.div
                     key={s.id}
                     whileHover={!locked ? { scale: 1.1 } : {}}
-                    onClick={()=>goToStep(s)}
+                    onClick={() => goToStep(s)}
                     className='flex flex-col items-center z-10 cursor-pointer'
                   >
 
@@ -121,28 +122,62 @@ function PartnerDashboard() {
 
         </div>
 
-        { 
-          activeStep==4 && userData?.partnerStatus === "rejected" && ( 
-            <RejectionCard 
-            title="Partner Rejected"
-            reason={userData?.rejectionReason || "No reason provided"} 
-            actionLabel={`Review and Update`} 
-            onAction={() => { 
-              router.push("/partner/onboarding/vehicle")
-            }}
+        {
+          activeStep == 4 && userData?.partnerStatus === "rejected" && (
+            <RejectionCard
+              title="Partner Rejected"
+              reason={userData?.rejectionReason || "No reason provided"}
+              actionLabel={`Review and Update`}
+              onAction={() => {
+                router.push("/partner/onboarding/vehicle")
+              }}
             />
-          )          
+          )
         }
 
 
-        { 
-          activeStep==4 && userData?.partnerStatus === "pending" && ( 
+        {
+          activeStep == 4 && userData?.partnerStatus === "pending" && (
             <StatusCard
-            icon={<Clock size={18}/>} 
-            title={"Documents under review"}
-            desc={"Admin is verifying your documents." }
+              icon={<Clock size={18} />}
+              title={"Documents under review"}
+              desc={"Admin is verifying your documents."}
             />
           )
+        }
+
+        {
+          activeStep == 5 && (
+            userData?.videoKycStatus === "approved" ? (
+              <StatusCard
+                icon={<Check size={18} />}
+                title={"video kyc approved"}
+                desc={"You can now proceed to pricing."}
+              />
+            ) : userData?.videoKycStatus === "reject" ? (
+              <RejectionCard
+                title="Video KYC Rejected"
+                reason={userData?.videoKycRejectionReason}
+                actionLabel="Request Again" 
+              />
+            ) :  userData?.videoKycStatus === "in_progress" && userData?.videoKycRoomId ? (
+              <ActionCard
+                icon={<Video size={18} />}
+                title={"Admin Started Video KYC"}
+                button={"Join Call"}
+                onClick={
+                  () => router.push(`/api/video-kyc/${userData.videoKycRoomId}`)
+                }
+              />
+            ) : (
+              <StatusCard
+                icon={<Clock size={18} />}
+                title="Waiting for Admin"
+                desc="Admin will initiate Video KYC shortly."
+              />
+            )
+          )
+
         }
 
       </div>

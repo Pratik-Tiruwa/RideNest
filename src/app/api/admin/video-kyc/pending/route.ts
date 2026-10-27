@@ -16,6 +16,7 @@ export async function GET() {
         
         const partner = await User.find({
             role : "partner", 
+            partnerOnBoardingSteps:4,
             videoKycStatus : {$in : ["pending", "in_progress"]}
         })
 
