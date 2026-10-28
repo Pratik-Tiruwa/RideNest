@@ -4,7 +4,8 @@ import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 import { useSelector } from 'react-redux';
 import { RootState } from "@/redux/store"
 import Image from 'next/image';
-import { Mic, MicOff, Video, VideoOff } from 'lucide-react';
+import { CheckCircle, Mic, MicOff, PhoneOff, Video, VideoOff, XCircle } from 'lucide-react';
+import { useParams } from 'next/navigation';
 
 function page() {
     const { userData } = useSelector((state: RootState) => state.user)
@@ -14,11 +15,13 @@ function page() {
     const [stream, setStream] = useState<MediaStream | null>(null)
     const [isCameraOn, setIsCameraOn] = useState<boolean>(true)
     const [isMicOn, setIsMicOn] = useState<boolean>(true)
+    const { roomId } = useParams()
+    const [loading, setLoading] = useState(false)
 
 
     useEffect(() => {
         if (joined) return
-        let localstream: MediaStream
+        let localstream: MediaStream | null = null
         const init = async () => {
             try {
                 localstream = await navigator.mediaDevices.getUserMedia({
@@ -29,54 +32,64 @@ function page() {
 
                 if (previewRef.current) {
                     previewRef.current.srcObject = localstream
-                    console.log(localstream)
                 }
             } catch (error) {
-                console.log(error)
+                console.log("Error accessing media devices in preview:", error)
             }
         }
         init()
-    }, [])
+
+    }, [joined])
 
     const toggleCamera = () => {
-
-        if (!stream) return
-        stream.getVideoTracks().forEach((track) => track.enabled = !isCameraOn)
-        setIsCameraOn(!isCameraOn)
+        if (stream) {
+            stream.getVideoTracks().forEach((track) => {
+                track.enabled = !isCameraOn
+            })
+        }
+        setIsCameraOn((prev) => !prev)
     }
 
     const toggleMic = () => {
-        if (!stream) return
-        stream.getAudioTracks().forEach((track) => track.enabled = !isMicOn)
-        setIsMicOn(!isMicOn)
+        if (stream) {
+            stream.getAudioTracks().forEach((track) => {
+                track.enabled = !isMicOn
+            })
+        }
+        setIsMicOn((prev) => !prev)
     }
 
     const startCall = async () => {
-        if (!containerRef || !userData?._id) {
+        if (!containerRef.current || !userData?._id) {
             return null
         }
+        setLoading(true)
 
+        const displayName = userData?.role == "admin" ? "Admin" : `${userData.name} (${userData.email})`
         try {
             const appId = Number(process.env.NEXT_PUBLIC_ZEGO_APP_ID)
             const serverSecret = process.env.NEXT_PUBLIC_ZEGO_SERVER_SECRET
             const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
                 appId,
                 serverSecret!,
-                "gjfgbsdh",
+                roomId?.toString()!,
                 userData?._id?.toString()!,
-                "ayush_8541"
+                displayName
             )
+
+            setJoined(true)
 
             const zp = ZegoUIKitPrebuilt.create(kitToken);
             // start the call
             zp.joinRoom({
                 container: containerRef.current,
                 scenario: {
-                    mode: ZegoUIKitPrebuilt.OneONoneCall, //  To implement 1-on-1 calls, modify the parameter here to [ZegoUIKitPrebuilt.OneONoneCall].
+                    mode: ZegoUIKitPrebuilt.OneONoneCall,
                 },
-                showPreJoinView: false
+                showPreJoinView: false,
             });
             setJoined(true)
+            setLoading(false)
 
         } catch (error) {
             console.log(error)
@@ -100,9 +113,32 @@ function page() {
                     <p className='text-xs text-gray-400'>{userData?.role == "admin" ? "Admin Verification" : "Partner Video KYC"}</p>
                 </div>
 
+                {joined && (
+                    <div className='flex flexs-wrap gap-3'>
+                        {userData?.role === "admin" && (
+                            <>
+                                <button className='bg-green-600 hover:bg-green-700 px-4 py-2 rounded-full text-sm flex items-center gap-2'>
+                                    <CheckCircle size={16} />
+                                    Approve
+                                </button>
+                                <button className=' bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full text-sm flex items-center gap-2'>
+                                    <XCircle size={16} />
+                                    Reject
+                                </button>
+                            </>
+                        )}
+                        <button className='bg-red-700 hover:bg-red-800 px-4 py-3 rounded-full text-sm flex items-center gap-2'><PhoneOff size={16} /> End Call</button>
+                    </div>
+                )}
+
             </div>
 
             <div className='flex-1 relative'>
+
+                <div
+                    ref={containerRef}
+                    className={`absolute inset-0 ${joined ? "block" : "hidden"}`}
+                />
                 {!joined && (
                     <div className='h-full flex items-center justify-center px-4 py-10'>
 
@@ -111,7 +147,8 @@ function page() {
                             <div className='relative rounded-2xl overflow-hidden border border-white/10 bg-white/5'>
                                 <video
                                     ref={previewRef}
-                                    autoPlay                                    playsInline
+                                    autoPlay
+                                    playsInline
                                     className='w-full h-75 sm:h-100 object-cover '
                                 />
 
@@ -127,16 +164,28 @@ function page() {
 
                                 <div className='flex justify-center lg:justify-start gap-6'>
                                     <button
-                                    onClick={toggleCamera}
+                                        onClick={toggleCamera}
                                         className={`w-14 h-14 rounded-full flex items-center justify-center transition ${isCameraOn
                                             ? "bg-white text-black" : "bg-white/10 border border-white/20"}`}
-                                    >{isCameraOn ? <Video /> : <VideoOff />}</button>
+                                    >
+                                        {isCameraOn ? <Video /> : <VideoOff />}
+                                    </button>
                                     <button
-                                    onClick={toggleMic}
+                                        onClick={toggleMic}
                                         className={`w-14 h-14 rounded-full flex items-center justify-center transition ${isMicOn
                                             ? "bg-white text-black" : "bg-white/10 border border-white/20"}`}
-                                    >{isMicOn ? <Mic /> : <MicOff />}</button>
+                                    >
+                                        {isMicOn ? <Mic /> : <MicOff />}
+                                    </button>
                                 </div>
+
+                                <button
+                                    onClick={startCall}
+                                    className='w-full bg-white text-black py-4 rounded-xl font-semibold'
+                                    disabled={loading}
+                                >
+                                    {loading ? "Connecting..." : "Join Secure Call"}
+                                </button>
 
                             </div>
 
