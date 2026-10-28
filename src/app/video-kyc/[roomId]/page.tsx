@@ -4,6 +4,7 @@ import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 import { useSelector } from 'react-redux';
 import { RootState } from "@/redux/store"
 import Image from 'next/image';
+import { Mic, MicOff, Video, VideoOff } from 'lucide-react';
 
 function page() {
     const { userData } = useSelector((state: RootState) => state.user)
@@ -11,22 +12,24 @@ function page() {
     const [joined, setJoined] = useState(false)
     const previewRef = useRef<HTMLVideoElement>(null)
     const [stream, setStream] = useState<MediaStream | null>(null)
+    const [isCameraOn, setIsCameraOn] = useState<boolean>(true)
+    const [isMicOn, setIsMicOn] = useState<boolean>(true)
 
 
-    useEffect(() => { 
-        if(joined) return 
+    useEffect(() => {
+        if (joined) return
         let localstream: MediaStream
-        const init = async() => { 
+        const init = async () => {
             try {
                 localstream = await navigator.mediaDevices.getUserMedia({
-                    video : true, 
-                    audio : true
+                    video: true,
+                    audio: true
                 })
                 setStream(localstream)
 
-                if(previewRef.current) { 
-                    previewRef.current.srcObject=localstream
-                    console.log(localstream)                   
+                if (previewRef.current) {
+                    previewRef.current.srcObject = localstream
+                    console.log(localstream)
                 }
             } catch (error) {
                 console.log(error)
@@ -34,7 +37,20 @@ function page() {
         }
         init()
     }, [])
-    
+
+    const toggleCamera = () => {
+
+        if (!stream) return
+        stream.getVideoTracks().forEach((track) => track.enabled = !isCameraOn)
+        setIsCameraOn(!isCameraOn)
+    }
+
+    const toggleMic = () => {
+        if (!stream) return
+        stream.getAudioTracks().forEach((track) => track.enabled = !isMicOn)
+        setIsMicOn(!isMicOn)
+    }
+
     const startCall = async () => {
         if (!containerRef || !userData?._id) {
             return null
@@ -93,14 +109,36 @@ function page() {
                         <div className='w-full max-w-6xl grid frid-cols-1 lg:grid-cols-2 gap-12 items-center'>
 
                             <div className='relative rounded-2xl overflow-hidden border border-white/10 bg-white/5'>
-                                <video 
-                                ref={previewRef} 
-                                autoPlay
-                                muted 
-                                playsInline
-                                className='w-full h-75 sm:h-100 object-cover '
+                                <video
+                                    ref={previewRef}
+                                    autoPlay                                    playsInline
+                                    className='w-full h-75 sm:h-100 object-cover '
                                 />
-                            </div> 
+
+                                {!isCameraOn && (
+                                    <div className='absolute inset-0 bg-black flex items-center justify-center'>
+                                        <VideoOff size={40} />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className='space-y-8 text-center lg:text-left'>
+                                <h1 className='text-3xl font-bold sm:text-4xl'>Secure Video KYC</h1>
+
+                                <div className='flex justify-center lg:justify-start gap-6'>
+                                    <button
+                                    onClick={toggleCamera}
+                                        className={`w-14 h-14 rounded-full flex items-center justify-center transition ${isCameraOn
+                                            ? "bg-white text-black" : "bg-white/10 border border-white/20"}`}
+                                    >{isCameraOn ? <Video /> : <VideoOff />}</button>
+                                    <button
+                                    onClick={toggleMic}
+                                        className={`w-14 h-14 rounded-full flex items-center justify-center transition ${isMicOn
+                                            ? "bg-white text-black" : "bg-white/10 border border-white/20"}`}
+                                    >{isMicOn ? <Mic /> : <MicOff />}</button>
+                                </div>
+
+                            </div>
 
                         </div>
 
