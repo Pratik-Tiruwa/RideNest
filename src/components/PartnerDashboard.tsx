@@ -1,9 +1,8 @@
 'use client'
 import { RootState } from '@/redux/store'
 import React, { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import {useSelector } from 'react-redux'
 import axios from 'axios'
-import { setUserData } from '@/redux/userSlice'
 import { motion } from "motion/react"
 import { Check, Clock, Lock, Video } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -35,6 +34,8 @@ function PartnerDashboard() {
   const [activeStep, setActiveStep] = useState(0)
   const { userData } = useSelector((state: RootState) => state.user)
   const router = useRouter()
+  const [requestLoading, setRequestLoading] = useState(false)
+  
   useEffect(() => {
     if (userData) {
       setActiveStep(userData.partnerOnBoardingSteps + 1)
@@ -151,14 +152,19 @@ function PartnerDashboard() {
             userData?.videoKycStatus === "approved" ? (
               <StatusCard
                 icon={<Check size={18} />}
-                title={"video kyc approved"}
+                title={"Video KYC approved"}
                 desc={"You can now proceed to pricing."}
               />
             ) : userData?.videoKycStatus === "reject" ? (
               <RejectionCard
                 title="Video KYC Rejected"
                 reason={userData?.videoKycRejectionReason}
-                actionLabel="Request Again" 
+                  actionLabel={requestLoading ? "Requesting..." : "Request Again"} 
+                  onAction={async () => {
+                    setRequestLoading(true)
+                    await axios.get("/api/partner/video-kyc/request")
+                    setRequestLoading(false)
+                  }}
               />
             ) :  userData?.videoKycStatus === "in_progress" && userData?.videoKycRoomId ? (
               <ActionCard
