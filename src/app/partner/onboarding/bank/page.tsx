@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { motion } from "motion/react"
-import { ArrowBigLeftDash, BadgeCheck, CheckCircle, CircleDashed, CreditCard, Landmark, Phone } from 'lucide-react'
+import {ArrowLeft, BadgeCheck, CheckCircle, CircleDashed, CreditCard, Landmark, Phone } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 
@@ -91,7 +91,7 @@ function page() {
                     <button className='absolute left-0 top-0 w-9 h-9 rounded-full border-gray-300 flex items-center justify-center hover:bg-gray-100 transition'
                         onClick={() => router.back()}
                     >
-                        <ArrowBigLeftDash size={18} /> </button>
+                        <ArrowLeft size={18} /> </button>
 
                     <p className='text-xs text-gray-500 font-medium'>step 3 of 3</p>
 
