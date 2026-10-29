@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation'
 import RejectionCard from './RejectionCard'
 import StatusCard from './StatusCard'
 import ActionCard from './ActionCard'
+import PricingModel from './PricingModel'
+import { IVehicle } from '@/models/vehicle.model'
 
 type Step = {
   id: number,
@@ -35,6 +37,8 @@ function PartnerDashboard() {
   const { userData } = useSelector((state: RootState) => state.user)
   const router = useRouter()
   const [requestLoading, setRequestLoading] = useState(false)
+  const [showPricing, setShowPricing] = useState(false)
+  const [vehicleData, setVehicleData] = useState<IVehicle | null>(null)
   
   useEffect(() => {
     if (userData) {
@@ -44,6 +48,11 @@ function PartnerDashboard() {
 
 
   const goToStep = (step: Step) => {
+
+    if(step.id == 6 && userData?.partnerStatus === "approved" && userData.videoKycStatus === "approved") { 
+      setShowPricing(true)
+      return;
+    }
     if (step.route && step.id <= activeStep) {
       router.push(step.route)
     }
@@ -187,6 +196,12 @@ function PartnerDashboard() {
         }
 
       </div>
+
+      <PricingModel 
+      open={showPricing}
+      onClose={()=>setShowPricing(false)}
+      data={vehicleData}
+      />
 
     </div>
   )
