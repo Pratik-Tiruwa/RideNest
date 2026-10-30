@@ -3,6 +3,7 @@ import { IVehicle } from "@/models/vehicle.model";
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ImagePlus, IndianRupee } from "lucide-react";
+import axios from "axios";
 
 type PropsType = {
   open: boolean;
@@ -14,8 +15,30 @@ function PricingModel({ open, onClose, data }: PropsType) {
   const [image, setImage] = useState<File | null>();
   const [preview, setPreview] = useState<string | null>(null);
   const [baseFare, setBaseFare] = useState("");
-  const [pricePerKm, setPricePerKm] = useState("");
+  const [pricePerKM, setPricePerKM] = useState("");
   const [waitingCharge, setWaitingCharge] = useState("");
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async() => { 
+    setLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append("baseFare", "baseFare")
+      formData.append("waitingCharge", waitingCharge)
+      formData.append("pricePerKM", pricePerKM)
+
+      if(image) {  
+        formData.append("image", image)
+      }
+
+      const {data} = await axios.post("/api/partner/onboarding/pricing", formData)
+      console.log(data)
+      setLoading(false)
+    } catch (error:any) {
+      console.log(error.response.data.message ?? error)
+      setLoading(false)
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -84,8 +107,8 @@ function PricingModel({ open, onClose, data }: PropsType) {
                   <input
                     type="text"
                     placeholder="price per KM"
-                    value={pricePerKm}
-                    onChange={(e) => setPricePerKm(e.target.value)}
+                    value={pricePerKM}
+                    onChange={(e) => setPricePerKM(e.target.value)}
                     className="w-full outline-none"
                   />
                 </div>
@@ -108,7 +131,11 @@ function PricingModel({ open, onClose, data }: PropsType) {
 
             <div className="p-6 border-t flex gap-3">
               <button className="flex-1 border rounded-xl py-2" onClick={onClose}>Cancel</button>
-              <button className="flex-1 bg-black text-white rounded-xl py-2">Save</button>
+              <button
+               className="flex-1 bg-black text-white rounded-xl py-2"
+               onClick={handleSubmit}
+               disabled={loading}
+               >{loading ? "Saving..." : "Save" }</button>
             </div>
             
           </motion.div>
