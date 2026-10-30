@@ -1,6 +1,6 @@
 "use client";
 import { IVehicle } from "@/models/vehicle.model";
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ImagePlus, IndianRupee } from "lucide-react";
 import axios from "axios";
@@ -13,17 +13,28 @@ type PropsType = {
 
 function PricingModel({ open, onClose, data }: PropsType) {
   const [image, setImage] = useState<File | null>();
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>( null);
   const [baseFare, setBaseFare] = useState("");
   const [pricePerKM, setPricePerKM] = useState("");
   const [waitingCharge, setWaitingCharge] = useState("");
   const [loading, setLoading] = useState(false)
 
+
+
+  useEffect(() => { 
+    if(data) { 
+      setPreview(data?.imageUrl || null) 
+      setBaseFare(data?.baseFare?.toString() || "")
+      setPricePerKM(data?.pricePerKM?.toString() || (data as any)?.pricePerKm?.toString() || "")
+      setWaitingCharge(data?.waitingCharge?.toString() || "")
+    }
+  }, [data])
+
   const handleSubmit = async() => { 
     setLoading(true)
     try {
       const formData = new FormData()
-      formData.append("baseFare", "baseFare")
+      formData.append("baseFare", baseFare)
       formData.append("waitingCharge", waitingCharge)
       formData.append("pricePerKM", pricePerKM)
 
@@ -34,6 +45,7 @@ function PricingModel({ open, onClose, data }: PropsType) {
       const {data} = await axios.post("/api/partner/onboarding/pricing", formData)
       console.log(data)
       setLoading(false)
+      onClose()
     } catch (error:any) {
       console.log(error.response.data.message ?? error)
       setLoading(false)

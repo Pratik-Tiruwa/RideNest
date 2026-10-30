@@ -1,7 +1,7 @@
 'use client'
 import { RootState } from '@/redux/store'
 import React, { useEffect, useState } from 'react'
-import {useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import axios from 'axios'
 import { motion } from "motion/react"
 import { Check, Clock, Lock, Video } from 'lucide-react'
@@ -39,17 +39,31 @@ function PartnerDashboard() {
   const [requestLoading, setRequestLoading] = useState(false)
   const [showPricing, setShowPricing] = useState(false)
   const [vehicleData, setVehicleData] = useState<IVehicle | null>(null)
-  
+
   useEffect(() => {
     if (userData) {
       setActiveStep(userData.partnerOnBoardingSteps + 1)
     }
   }, [userData])
 
+  const handleGetPricing = async () => {
+    try {
+      const { data } = await axios.get("/api/partner/onboarding/pricing")
+      console.log(data)
+      setVehicleData(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    handleGetPricing()
+  }, [])
+
 
   const goToStep = (step: Step) => {
 
-    if(step.id == 6 && userData?.partnerStatus === "approved" && userData.videoKycStatus === "approved") { 
+    if (step.id == 6 && userData?.partnerStatus === "approved" && userData.videoKycStatus === "approved") {
       setShowPricing(true)
       return;
     }
@@ -168,14 +182,14 @@ function PartnerDashboard() {
               <RejectionCard
                 title="Video KYC Rejected"
                 reason={userData?.videoKycRejectionReason}
-                  actionLabel={requestLoading ? "Requesting..." : "Request Again"} 
-                  onAction={async () => {
-                    setRequestLoading(true)
-                    await axios.get("/api/partner/video-kyc/request")
-                    setRequestLoading(false)
-                  }}
+                actionLabel={requestLoading ? "Requesting..." : "Request Again"}
+                onAction={async () => {
+                  setRequestLoading(true)
+                  await axios.get("/api/partner/video-kyc/request")
+                  setRequestLoading(false)
+                }}
               />
-            ) :  userData?.videoKycStatus === "in_progress" && userData?.videoKycRoomId ? (
+            ) : userData?.videoKycStatus === "in_progress" && userData?.videoKycRoomId ? (
               <ActionCard
                 icon={<Video size={18} />}
                 title={"Admin Started Video KYC"}
@@ -195,12 +209,30 @@ function PartnerDashboard() {
 
         }
 
+
+        {activeStep == 7 && vehicleData?.status == "pending" && (
+          <StatusCard
+            icon={<Clock size={20} />}
+            title="Pricing Under Review"
+            desc="Admin is reviewing your pricing."
+          />
+        )}
+
+        {activeStep == 7 && vehicleData?.status == "rejected" && (
+          <RejectionCard
+            title="Pricing Rejected"
+            reason={vehicleData.rejectionReason}
+            actionLabel="Edit & Resubmit"
+            onAction={() => setShowPricing(true)}
+          />
+        )}
+
       </div>
 
-      <PricingModel 
-      open={showPricing}
-      onClose={()=>setShowPricing(false)}
-      data={vehicleData}
+      <PricingModel
+        open={showPricing}
+        onClose={() => setShowPricing(false)}
+        data={vehicleData}
       />
 
     </div>
