@@ -43,13 +43,27 @@ An interactive 8-stage onboarding stepper with dynamic progress tracking and sta
    - Account holder name, account number, IFSC code, mobile number, and UPI ID.
    - Instant client-side validation and server-side persistence.
    - Automatic prefetching and prefilling for returning partners.
+   - Immediate automatic redirect (`router.push('/')`) to dashboard upon step submission across all onboarding forms (Vehicle, Documents, Bank).
 4. **Partner Dashboard & Review Status (`PartnerDashboard.tsx`)**:
    - **Interactive Stepper Dashboard**: Animated progress bar and step indicators powered by **Framer Motion**.
    - **Documents Under Review (`StatusCard.tsx`)**: Renders dynamically on Step 4 when `partnerStatus === "pending"`, alerting the partner that the admin is reviewing documents.
    - **Rejection & Resubmission (`RejectionCard.tsx`)**: Renders dynamically on Step 4 when `partnerStatus === "rejected"`, displaying the admin's exact rejection reason with an interactive *"Review and Update"* action button to edit and resubmit.
-5. **Live Video KYC (`/zego`)**:
+5. **Live Video KYC Verification (`/video-kyc/[roomId]`)**:
    - 1-on-1 real-time video verification powered by `@zegocloud/zego-uikit-prebuilt`.
-6. **Upcoming Steps**: Pricing configuration, Final Review, and Live account activation.
+   - **Live Admin Room Initiation**: Admin triggers video call from review dashboard (`/api/admin/video-kyc/start/[id]`).
+   - **Partner Dashboard Call Alert (`ActionCard.tsx`)**: Shows dynamic *"Admin Started Video KYC"* card with a direct *"Join Call"* action button.
+   - **Re-request & Rejection Handling**: Partners can re-request video KYC upon rejection with room cleanup (`/api/partner/video-kyc/request`).
+   - **Verification Completion**: Admin marks KYC as complete (`/api/admin/video-kyc/complete`), updating `videoKycStatus = "approved"` and advancing partner step to 5.
+6. **Vehicle Pricing Model & Image Upload (`PricingModel.tsx`)**:
+   - Triggered on Step 6 once partner document review and video KYC are both approved.
+   - **Fare & Color Configuration**: Interactive animated modal to configure **Base Fare**, **Price Per KM**, **Waiting Charge**, and **Vehicle Color**.
+   - **Vehicle Image Upload**: Direct Cloudinary upload with real-time local file preview (`URL.createObjectURL`).
+   - **Prefill on Edit**: Automatically fetches and populates saved pricing, color, and image for quick updates (`GET /api/partner/onboarding/pricing`).
+7. **Pricing Review & Resubmission (`PartnerDashboard.tsx`)**:
+   - **Pricing Under Review (`StatusCard.tsx`)**: Displayed on Step 7 when `vehicleData.status === "pending"`.
+   - **Pricing Rejection & Resubmission (`RejectionCard.tsx`)**: Renders when `vehicleData.status === "rejected"` with the admin's rejection reason and an *"Edit & Resubmit"* action button.
+8. **Live Account Activation (`PartnerDashboard.tsx`)**:
+   - **"🚀 You're Live" Completion Banner**: Celebratory card displayed on Step 8 when vehicle status is approved, with a direct *"Go to Bookings"* call-to-action button.
 
 ---
 
@@ -89,6 +103,26 @@ An interactive 8-stage onboarding stepper with dynamic progress tracking and sta
 
 ---
 
+### 🚗 5. Admin Vehicle Review & Approval Suite (`/admin/reviews/vehicle/[id]`)
+- **Review Page Layout**:
+  - Sticky glassmorphic header with partner profile, back button, and dynamic status pills (`Approved`, `Rejected`, `Pending`).
+  - Vehicle image showcase with Framer Motion entry and `object-contain` scaling to display uncropped vehicle previews.
+- **Vehicle Specifications Card**:
+  - Displays vehicle type, model name, registration number, and **Vehicle Color**.
+- **Pricing Configuration Card**:
+  - Real-time display of partner rates: **Base Fare**, **Price Per KM**, and **Waiting Charge** formatted with Indian Rupee currency notation.
+- **Interactive Action Dialogs**:
+  - **Approve Vehicle**: Triggers approval modal with confirmation and loading spinner.
+  - **Reject Vehicle**: Triggers rejection modal requiring admin feedback and rejection reason.
+- **Backend Endpoints**:
+  - `GET /api/admin/reviews/vehicle/[id]`: Fetches complete vehicle details with populated owner profile.
+  - `GET /api/admin/reviews/vehicle/[id]/approve`: Approves vehicle, resets rejection reason, and advances partner onboarding step to 7.
+  - `POST /api/admin/reviews/vehicle/[id]/reject`: Sets vehicle status to `rejected` and stores admin rejection reason.
+- **Dashboard Review Queue Filtering**:
+  - `GET /api/admin/dashboard` filters `pendingVehicles` with `baseFare: { $exists: true }` to ensure only vehicles with submitted pricing appear in the admin queue.
+
+---
+
 ### 🎨 5. Design System & Frontend Architecture
 - **Tailwind CSS v4**: Modern CSS theme with glassmorphism (`backdrop-blur`), refined color palettes, and fluid layouts.
 - **Redux Toolkit (`@reduxjs/toolkit`)**: Global client-side state management for user profile and active onboarding step hydration (`useGetMe`).
@@ -121,25 +155,30 @@ ridenest/
 ├── public/                      # Static assets (logo_primary.png, vehicles, etc.)
 ├── src/
 │   ├── app/
-│   │   ├── admin/reviews/partner/[id]/ # Admin partner review page
+│   │   ├── admin/reviews/
+│   │   │   ├── partner/[id]/    # Admin partner document review page
+│   │   │   └── vehicle/[id]/    # Admin vehicle & pricing review page
 │   │   ├── api/
 │   │   │   ├── admin/
 │   │   │   │   ├── dashboard/   # Admin metrics & review queue API
-│   │   │   │   └── reviews/partner/[id]/
-│   │   │   │       ├── approve/ # Approve partner review API
-│   │   │   │       ├── reject/  # Reject partner review API
-│   │   │   │       └── route.ts # Fetch partner details for review
+│   │   │   │   ├── reviews/
+│   │   │   │   │   ├── partner/[id]/ # Partner review, approve, reject endpoints
+│   │   │   │   │   └── vehicle/[id]/ # Vehicle review, approve, reject endpoints
+│   │   │   │   └── video-kyc/   # Video KYC start, pending & complete endpoints
 │   │   │   ├── auth/            # NextAuth, email verification & registration
-│   │   │   ├── partner/onboarding/
-│   │   │   │   ├── bank/        # Partner bank details API
-│   │   │   │   ├── documents/   # Document upload (Aadhar, License, RC) API
-│   │   │   │   └── vehicle/     # Vehicle registration & details API
+│   │   │   ├── partner/
+│   │   │   │   ├── onboarding/
+│   │   │   │   │   ├── bank/    # Partner bank details API
+│   │   │   │   │   ├── documents/ # Document upload (Aadhar, License, RC) API
+│   │   │   │   │   ├── pricing/ # Vehicle pricing, color & image upload API
+│   │   │   │   │   └── vehicle/ # Vehicle registration & details API
+│   │   │   │   └── video-kyc/request/ # Video KYC re-request endpoint
 │   │   │   └── user/me/         # Current user profile endpoint
 │   │   ├── partner/onboarding/
 │   │   │   ├── bank/            # Bank details form page
 │   │   │   ├── documents/       # Document upload form page
 │   │   │   └── vehicle/         # Vehicle registration page
-│   │   ├── zego/                # ZegoCloud video KYC verification page
+│   │   ├── video-kyc/[roomId]/  # Live 1-on-1 ZegoCloud video KYC room
 │   │   ├── layout.tsx           # Root layout with Redux & Session providers
 │   │   └── page.tsx             # Role-based conditional home router
 │   ├── components/
@@ -153,6 +192,7 @@ ridenest/
 │   │   ├── Kpi.tsx              # Animated metric KPI card
 │   │   ├── Navbar.tsx           # Top navigation bar
 │   │   ├── PartnerDashboard.tsx # 8-step onboarding stepper dashboard
+│   │   ├── PricingModel.tsx     # Step 6 modal for pricing rates, color & image upload
 │   │   ├── PublicHome.tsx       # Customer home view
 │   │   ├── RejectionCard.tsx    # Step 4 rejection alert card with reason & retry
 │   │   ├── StatusCard.tsx       # Step 4 pending review status indicator card
@@ -182,8 +222,8 @@ ridenest/
 
 ## 🗄️ Database Schemas Summary
 
-- **`User`**: Core user entity storing credentials, role (`user` \| `partner` \| `admin`), `partnerStatus` (`pending` \| `approved` \| `rejected`), `rejectionReason`, `partnerOnBoardingSteps` (1 to 8), OTP, and mobile number.
-- **`Vehicle`**: Partner vehicle profile tracking `owner` reference, vehicle type (`bike`, `scooty`, `car`, `luxury`), registration number, and model name.
+- **`User`**: Core user entity storing credentials, role (`user` \| `partner` \| `admin`), `partnerStatus` (`pending` \| `approved` \| `rejected`), `rejectionReason`, `partnerOnBoardingSteps` (1 to 8), `videoKycStatus` (`pending` \| `approved` \| `rejected` \| `in_progress`), `videoKycRoomId`, `videoKycRejectionReason`, OTP, and mobile number.
+- **`Vehicle`**: Partner vehicle profile tracking `owner` reference, vehicle type (`bike`, `car`, `loading`, `truck`, `auto`), model name, registration number, `color`, `imageUrl`, pricing rates (`baseFare`, `pricePerKM`, `waitingCharge`), `status` (`approved` \| `pending` \| `rejected`), `rejectionReason`, and `isActive` flag.
 - **`PartnerDocs`**: KYC documents storing Cloudinary URLs for Aadhar Card, Driving License (`licenseUrl`), and Vehicle RC, along with review status.
 - **`PartnerBank`**: Financial payout profile containing account holder name, bank account number, IFSC code, and UPI ID.
 
@@ -245,7 +285,8 @@ Open [http://localhost:3008](http://localhost:3008) in your browser to view the 
 
 ## 🛣️ Roadmap & Upcoming Work
 - [x] Complete Partner Document Approval / Rejection actions inside Admin Panel.
-- [ ] Video KYC scheduling and Admin room joining workflow.
+- [x] Video KYC scheduling, real-time room call initiation, and Admin verification workflow.
+- [x] Vehicle pricing configuration, image upload, and Admin vehicle approval/rejection suite.
 - [ ] Vehicle search, geolocation filters, and instant booking system for customers.
 - [ ] Payment gateway integration (Razorpay / Stripe) for rental deposits and payments.
 - [ ] Partner earnings dashboard and payout management.
