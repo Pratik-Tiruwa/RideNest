@@ -22,15 +22,16 @@ function page() {
     const [loading, setLoading] = useState(false)
 
     const handleVehicle = async () => {
+        setLoading(true)
         setError("")
         try {
-            setLoading(true)
             const { data } = await axios.post("/api/partner/onboarding/vehicle", {
                 type: vehicleType,
                 number: vehicleNumber,
                 vehicleModel: vehicleModel
             })
             setLoading(false)
+            router.push("/")
         } catch (error: any) {
             setError(error?.response?.data?.message ?? "Something went wrong");
             setLoading(false)

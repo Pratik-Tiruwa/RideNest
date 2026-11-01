@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { motion } from "motion/react"
-import {ArrowLeft, BadgeCheck, CheckCircle, CircleDashed, CreditCard, Landmark, Phone } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, CheckCircle, CircleDashed, CreditCard, Landmark, Phone } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 
@@ -40,6 +40,7 @@ function page() {
             })
             console.log(data)
             setLoading(false)
+            router.push("/")
         } catch (error: any) {
             setError(error?.response?.data?.message ?? "Someting went wrong")
             console.log(error)
@@ -61,6 +62,7 @@ function page() {
                         setAccountNumber(data.partnerBank.accountNumber || "")
                         setIfscCode(data.partnerBank.ifscCode || "")
                         setUpi(data.partnerBank.upi || "")
+
                     }
 
                     if (data.mobileNumber) {
@@ -69,7 +71,7 @@ function page() {
                 }
             } catch (error: any) {
                 console.log(error)
-            } finally { 
+            } finally {
                 setLoading(false)
             }
         }

@@ -70,6 +70,7 @@ function page() {
 
       const { data } = await axios.post("/api/partner/onboarding/documents", formdata)
       setLoading(false)
+      router.push("/")
     } catch (error: any) {
       setError(error?.response?.data?.message || "Something went wrong")
       console.log(error)
@@ -99,7 +100,7 @@ function page() {
     setDocs((prev) => ({ ...prev, [doc]: file }))
   }
 
-  const isAllUploaded = docs.aadhar && docs.license && docs.rc; 
+  const isAllUploaded = docs.aadhar && docs.license && docs.rc;
   return (
 
     <div className='min-h-screen bg-white flex items-center justify-center px-4'>
@@ -190,9 +191,9 @@ function page() {
               {docs.rc
                 ? <span className='text-xs text-green-600 font-medium'>Uploaded</span>
                 : <div>
-                    <span className='text-xs text-gray-400'>Upload</span>
-                    <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
-                  </div>
+                  <span className='text-xs text-gray-400'>Upload</span>
+                  <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'> <UploadCloud size={18} /> </div>
+                </div>
               }
             </div>
 
