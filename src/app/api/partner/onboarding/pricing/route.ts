@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData()
     const image = formData.get("image") as File | null
+    const color = formData.get("color") as string | null
     const baseFare = formData.get("baseFare")
     const pricePerKM = formData.get("pricePerKM")
     const waitingCharge = formData.get("waitingCharge")
@@ -43,6 +44,11 @@ export async function POST(req: NextRequest) {
     if (image && image.size > 0) {
       const imageUrl = vehicle.imageUrl = await uploadOnCloudinary(image)
       vehicle.imageUrl = imageUrl
+      updated = true
+    }
+
+    if (color) {
+      vehicle.color = color
       updated = true
     }
 

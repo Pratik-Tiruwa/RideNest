@@ -13,6 +13,7 @@ export interface IVehicle {
     type: vehicleType,
     vehicleModel: string,
     number: string,
+    color? : string,
     imageUrl?: string,
     baseFare?: number,
     pricePerKM?: number,
@@ -160,6 +161,11 @@ function page() {
                         <div className='flex justify-between text-sm'>
                             <span className='text-gray-500'>Model</span>
                             <span className='font-semibold'>{data?.vehicleModel || "-"}</span>
+                        </div>
+
+                        <div className='flex justify-between text-sm'>
+                            <span className='text-gray-500'>Color</span>
+                            <span className='font-semibold capitalize'>{data?.color || "-"}</span>
                         </div>
                     </AnimatedCard>
 

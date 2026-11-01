@@ -17,6 +17,7 @@ function PricingModel({ open, onClose, data }: PropsType) {
   const [baseFare, setBaseFare] = useState("");
   const [pricePerKM, setPricePerKM] = useState("");
   const [waitingCharge, setWaitingCharge] = useState("");
+  const [color, setColor] = useState("");
   const [loading, setLoading] = useState(false)
 
 
@@ -24,6 +25,7 @@ function PricingModel({ open, onClose, data }: PropsType) {
   useEffect(() => { 
     if(data) { 
       setPreview(data?.imageUrl || null) 
+      setColor((data as any)?.color || "")
       setBaseFare(data?.baseFare?.toString() || "")
       setPricePerKM(data?.pricePerKM?.toString() || (data as any)?.pricePerKm?.toString() || "")
       setWaitingCharge(data?.waitingCharge?.toString() || "")
@@ -40,6 +42,10 @@ function PricingModel({ open, onClose, data }: PropsType) {
 
       if(image) {  
         formData.append("image", image)
+      }
+
+      if(color) { 
+        formData.append("color", color)
       }
 
       const {data} = await axios.post("/api/partner/onboarding/pricing", formData)
@@ -97,6 +103,20 @@ function PricingModel({ open, onClose, data }: PropsType) {
                   }}
                 />
               </label>
+
+              <div>
+                <p className="text-sm font-semibold mb-1">Vehicle Color</p>
+                <div className="flex items-center gap-2 border rounded-xl px-4 py-3 bg-white">
+                  <IndianRupee size={18} />
+                  <input 
+                  type="text"
+                  placeholder="e.g. White, Black, Red"
+                  value={color}
+                  onChange={(e)=>setColor(e.target.value)}
+                  className="w-full outline-none"
+                  />
+                </div>
+              </div>
 
               <div>
                 <p className="text-sm font-semibold mb-1">Base Fare</p>

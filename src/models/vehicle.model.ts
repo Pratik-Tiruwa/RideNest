@@ -12,7 +12,8 @@ export interface IVehicle {
     owner: mongoose.Types.ObjectId
     type : vehicleType, 
     vehicleModel : string, 
-    number : string, 
+    number : string,
+    color? : string, 
     imageUrl? : string, 
     baseFare? : number, 
     pricePerKM? : number, 
@@ -41,6 +42,9 @@ const vehicleSchema = new mongoose.Schema<IVehicle>({
         required : true, 
         unique : true
     }, 
+    color : { 
+        type : String
+    },
     vehicleModel : { 
         type : String, 
         required : true
