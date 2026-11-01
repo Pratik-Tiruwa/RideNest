@@ -132,10 +132,10 @@ function page() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className='rounded-3xl overflow-hidden shadow-xl bg-white'
+                    className='rounded-3xl overflow-hidden shadow-xl bg-white self-start sticky top-24'
                 >
                     {data?.imageUrl ? (
-                        <img src={data.imageUrl} alt='vehicle' className='w-full h-112.5 object-cover' />
+                        <img src={data.imageUrl} alt='vehicle' className='w-full h-112.5 object-contain' />
                     ) : (
                         <div className='h-112.5 grid place-items-center text-gray-300'>
                             <ImageIcon size={25} />
