@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react'
-import { motion } from "motion/react"
-import { ArrowLeft, Bike, Car, CheckCircle, Truck } from 'lucide-react'
+import { AnimatePresence, motion } from "motion/react"
+import { ArrowLeft, Bike, Car, CheckCircle, Phone, Truck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { vehicleType } from '@/models/vehicle.model'
 
@@ -134,10 +134,61 @@ function page() {
 
             </motion.div>
 
+            <div className='h-px bg-zinc-100' />
+
+            <motion.div
+              variants={stepVariants}
+              initial={"hidden"}
+              animate={"visible"}
+              transition={{ delay: 0.05 }}
+            >
+
+              <div className='flex items-center gap-2 mb-3'>
+
+                <div className='w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center shrink-0'>
+                  <span className='text-white text-[9px] font-black'>2</span>
+                </div>
+
+                <p className='text-xs font-bold text-zinc-500 uppercase tracking-widest'>Mobile</p>
+
+              </div>
+
+              <div className='flex items-center gap-3 bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 focus-within:border-zinc-900 focus-within:bg-white transition-all'>
+
+                <div className='w-8 h-8 rounded-xl bg-zinc-200 flex items-center justify-center shrink-0'>
+                <Phone size={14}  className='text-zinc-600' />
+                </div>
+
+                <input 
+                type="tel" 
+                value={mobile}
+                onChange={(e)=>setMobile(e.target.value)}
+                placeholder='Enter your mobile number'
+                inputMode='numeric'
+                maxLength={15}
+                className='flex bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none'
+                />
+
+                <AnimatePresence>
+                  {mobile.length == 10 && ( 
+                    <motion.div
+                    initial = {{ scale : 0}}
+                    animate = {{ scale : 1}}
+                    exit = {{ scale : 0}}
+                    >
+                      <CheckCircle size={16} className='text-emerald-500 fill-emerald-50 shrink-0' />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+              </div>
+
+              <p className='text-zinc-400 text-[10px] mt-1.5 ml-1'>Ride updates will be sent to this number</p>
+            </motion.div>
+
           </div>
 
         </div>
-
       </motion.div>
 
     </div>
