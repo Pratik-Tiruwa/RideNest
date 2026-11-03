@@ -113,8 +113,8 @@ function page() {
                       </div>
 
                       <div className='min-w-0'>
-                        <p className={`text-sm font-bold truncate ${active ? "text-white" : "text-zinc-400"}`}>{v.label}</p>
-                        <p className={`text-[10px] truncate ${active ? "text-zinc-400" : "text-zinc-400"}`}>{v.desc}</p>
+                        <p className={`text-sm font-bold truncate ${active ? "text-white" : "text-zinc-900"}`}>{v.label}</p>
+                        <p className={`text-[10px] truncate ${active ? "text-zinc-400" : "text-zinc-500"}`}>{v.desc}</p>
                       </div>
 
                       {active && (
@@ -166,7 +166,7 @@ function page() {
                 placeholder='Enter your mobile number'
                 inputMode='numeric'
                 maxLength={15}
-                className='flex bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none'
+                className='flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none'
                 />
 
                 <AnimatePresence>
