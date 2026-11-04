@@ -1,9 +1,10 @@
 'use client'
 import React, { useState } from 'react'
 import { AnimatePresence, motion } from "motion/react"
-import { ArrowLeft, Bike, Car, CheckCircle, Phone, Truck } from 'lucide-react'
+import { ArrowLeft, Bike, Car, CheckCircle, LocateFixed, Phone, Truck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { vehicleType } from '@/models/vehicle.model'
+import axios from 'axios'
 
 const stepVariants = {
   hidden: { opacity: 0, y: 16 },
@@ -24,9 +25,55 @@ function page() {
   const [mobile, setMobile] = useState("")
   const [pickUp, setPickUp] = useState("")
   const [drop, setDrop] = useState("")
+  const [pickUpCountry, setPickUpCountry] = useState("")
+  const [pickUpLat, setPickUpLat] = useState<Number>()
+  const [pickUpLon , setPickUpLon] = useState<Number>()
+  const [locating, setLocating] = useState(false)
   const progress = [!!vehicle, !!(mobile.length == 10), !!pickUp, !!drop].filter(Boolean).length
 
   // console.log(progress)
+
+  const useCurrentLocation = () => { 
+    if(!navigator.geolocation) return; 
+
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(async ({coords})=> { 
+      // console.log(coords)
+      try {
+        const {data} = await axios.get(`https://photon.komoot.io/reverse?lon=${coords.longitude}&lat=${coords.latitude}`)
+        
+        if(data.features.length) { 
+          const p = data.features[0].properties 
+
+          const locality = p.locality || p.suburb || "" 
+
+          const city = p.city || (p.county ? p.county.replace("District", "") : "") || p.district || ""
+
+          const street = p.street && p.street !== p.name ? p.street : "" 
+
+          const addressParts = [ 
+            p.name, 
+            street, 
+            locality, 
+            city, 
+            p.state,
+            p.postcode, 
+            p.country
+          ] 
+
+          const address = Array.from(new Set(addressParts.filter(Boolean))).join(", ")
+          setPickUp(address)
+          setPickUpCountry(p.country)
+          setPickUpLat(coords.latitude)
+          setPickUpLon(coords.longitude)
+          setLocating(false)
+        }
+      } catch (error) {
+        console.log(error)
+        setLocating(false)
+      }
+    })
+  }
 
   return (
     <div className='min-h-screen bg-zinc-100 flex items-center justify-center px-4 py-10'>
@@ -156,25 +203,25 @@ function page() {
               <div className='flex items-center gap-3 bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 focus-within:border-zinc-900 focus-within:bg-white transition-all'>
 
                 <div className='w-8 h-8 rounded-xl bg-zinc-200 flex items-center justify-center shrink-0'>
-                <Phone size={14}  className='text-zinc-600' />
+                  <Phone size={14} className='text-zinc-600' />
                 </div>
 
-                <input 
-                type="tel" 
-                value={mobile}
-                onChange={(e)=>setMobile(e.target.value)}
-                placeholder='Enter your mobile number'
-                inputMode='numeric'
-                maxLength={15}
-                className='flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none'
+                <input
+                  type="tel"
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value)}
+                  placeholder='Enter your mobile number'
+                  inputMode='numeric'
+                  maxLength={15}
+                  className='flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none'
                 />
 
                 <AnimatePresence>
-                  {mobile.length == 10 && ( 
+                  {mobile.length == 10 && (
                     <motion.div
-                    initial = {{ scale : 0}}
-                    animate = {{ scale : 1}}
-                    exit = {{ scale : 0}}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
                     >
                       <CheckCircle size={16} className='text-emerald-500 fill-emerald-50 shrink-0' />
                     </motion.div>
@@ -184,6 +231,55 @@ function page() {
               </div>
 
               <p className='text-zinc-400 text-[10px] mt-1.5 ml-1'>Ride updates will be sent to this number</p>
+            </motion.div>
+
+            <div className='h-px bg-zinc-100' />
+
+            <motion.div
+              variants={stepVariants}
+              initial={"hidden"}
+              animate={"visible"}
+              transition={{ delay: 0.05 }}
+            >
+
+              <div className='flex items-center gap-2 mb-3'>
+                <div className='w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center shrink-0'>
+                  <span className='text-white text-[9px] font-black'>3</span>
+                </div>
+                <p className='text-xs font-bold uppercase text-zinc-500 tracking-widest'>Route</p>
+              </div>
+
+              <div className='bg-zinc-50 border border-zinc-400 rounded-2xl overflow-visible'>
+
+                <div className='relative z-20'>
+                  <div className='flex items-center gap-3 px-4 py-3.5 focus-within:bg-white rounded-t-2xl transition-colors'>
+
+                    <div className='flex flex-col items-center shrink-0'>
+                      <div className='w-3 h-3 rounded-full bg-zinc-900 border-2 border-white shadow ' />
+                      <div className='w-px h-5 bg-zinc-300 mt-1' /> 
+                    </div>
+
+                    <input 
+                    onChange={(e)=>setPickUp(e.target.value)}
+                    value={pickUp}
+                    placeholder='Pickup location'
+                    className='flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none'
+                    />
+
+                    <motion.button
+                    whileTap={{ scale : 0.88}}
+                    onClick={useCurrentLocation}
+                    disabled={locating}
+                    className='w-8 h-8 rounded-xl bg-zinc-200 hover:bg-zinc-300 transition-colors flex items-center justify-center shrink-0'
+                    >
+                      <LocateFixed  size={14} className={`text-zinc-700 ${locating ? "animate-spin" : ""}`}/>
+
+                    </motion.button> 
+                  </div>
+                </div>
+
+              </div>
+
             </motion.div>
 
           </div>
