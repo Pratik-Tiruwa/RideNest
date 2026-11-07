@@ -45,18 +45,25 @@ function page() {
   const [locating, setLocating] = useState(false)
   const [pickUpSuggestion, setPickUpSuggestion] = useState<Place[]>([])
   const [dropSuggestion, setDropSuggestion] = useState<Place[]>([])
-  const progress = [!!vehicle, !!(mobile.length == 10), !!pickUp, !!drop].filter(Boolean).length
+  // const progress = [!!vehicle, !!(mobile.length == 10), !!pickUp, !!drop].filter(Boolean).length 
+
+  const stepsCompleted = [ 
+    Boolean(vehicle), 
+    mobile.length == 10 , 
+    Boolean(pickUp), 
+    Boolean(drop)
+  ]
 
   // console.log(progress)
 
-  const searchAddress = async (q: string, setResults: (r: Place[]) => void) => {
+  const searchAddress = async (q: string, setResults: (r: Place[]) => void,restrict?:string) => {
     try {
       if (!q || q.trim().length < 3) {
         setResults([])
         return;
       }
       const { data } = await axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(q.trim())}&limit=8&lang=en`)
-      const results: Place[] = (data.features ?? []).map((f: any) => ({
+      let results: Place[] = (data.features ?? []).map((f: any) => ({
         id: String(f.properties.osm_id),
         name: f.properties.name,
         city: f.properties.city,
@@ -66,6 +73,9 @@ function page() {
         lat: f.geometry.coordinates[1],
         lon: f.geometry.coordinates[0]
       }))
+      if(restrict) { 
+        results = results.filter(r => r.country == restrict)
+      }
       setResults(results)
     } catch (error) {
       console.log(error)
@@ -155,10 +165,10 @@ function page() {
 
           <div className='flex items-center gap-1.5 shrink-0'>
             {
-              [0, 1, 2, 3].map((d, i) => (
+              stepsCompleted.map((isDone, i) => (
                 <motion.div
                   key={i}
-                  animate={{ width: i < progress ? 20 : 8, background: i < progress ? "#09090b" : "#d4d4d8" }}
+                  animate={{ width: isDone ? 20 : 8, background: isDone ? "#09090b" : "#d4d4d8" }}
                   transition={{ duration: 0.3 }}
                   className='h-2 rounded-full'
                 />
@@ -170,7 +180,7 @@ function page() {
 
         <div className='bg-white rounded-3xl border border-zinc-200 shadow-[0_8px_40px_rgba(0,0,0,0.08)] overflow-visible'>
 
-          <div className='h-1 bg-zinc-900 w-full' />
+          <div className='h-1 bg-zinc-900 w-[90%] m-auto' />
 
           <div className='p-6 space-y-7'>
             <motion.div
@@ -379,10 +389,11 @@ function page() {
                     <input
                       onChange={(e) => {
                         setDrop(e.target.value)
-                        searchAddress(e.target.value, setDropSuggestion)
-                      }}
+                        searchAddress(e.target.value, setDropSuggestion, pickUpCountry)
+                      }} 
+                      disabled={!pickUpCountry}
                       value={drop}
-                      placeholder='Drop location'
+                      placeholder={pickUpCountry ? "Drop Location" : "Select Pick up Location First"}
                       className='flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none'
                     /> 
 
