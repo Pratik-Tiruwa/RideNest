@@ -45,14 +45,13 @@ function page() {
   const [locating, setLocating] = useState(false)
   const [pickUpSuggestion, setPickUpSuggestion] = useState<Place[]>([])
   const [dropSuggestion, setDropSuggestion] = useState<Place[]>([])
-  // const progress = [!!vehicle, !!(mobile.length == 10), !!pickUp, !!drop].filter(Boolean).length 
-
   const stepsCompleted = [ 
     Boolean(vehicle), 
     mobile.length == 10 , 
     Boolean(pickUp), 
     Boolean(drop)
   ]
+  const canContinue = !!(vehicle && mobile && pickUp && drop && pickUpLat && pickUpLon && dropLat && dropLon)
 
   // console.log(progress)
 
@@ -437,6 +436,30 @@ function page() {
 
               </div>
   
+            </motion.div> 
+
+
+            <motion.div
+            variants={stepVariants} 
+            initial = "hidden"
+            animate = "visible"
+            transition={{delay : 0.3}}
+            >
+
+              <motion.button
+              whileTap={{ scale : 0.97}}
+              whileHover={canContinue ? {scale : 1.02} : {}}
+              disabled={!canContinue}
+              onClick={()=> { 
+                router.push(`/search?pickup=${encodeURIComponent(pickUp)}&drop=${encodeURIComponent(drop)}&vehicle=${vehicle}&mobile=${encodeURIComponent(mobile)}&pickuplat=${pickUpLat}&pickuplon=${pickUpLon}&droplat=${dropLat}&droplon=${dropLon}`)
+              }} 
+              className='w-full h-14 rounded-2xl bg-zinc-900 hover:bg-black disabled:opacity-35 text-white font-black text-sm tracking-wide flex items-center justify-center gap-2.5 transition-colors shadow-lg disabled:shadow-none' 
+              > 
+
+              <span>Continue</span>
+
+              </motion.button>
+
             </motion.div>
 
           </div>
