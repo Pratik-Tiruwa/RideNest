@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
 import L from "leaflet"
 import axios from 'axios'
@@ -74,58 +74,146 @@ const dropIcon = new L.DivIcon({
   iconAnchor: [45, 58]
 })
 
-function SearchMap({ pickUpCoords, dropCoords, onDistance }: Props) {
+function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props) {
 
+  const [p1, setP1] = useState<[number, number] | undefined>(pickUpCoords)
+  const [p2, setP2] = useState<[number, number] | undefined>(dropCoords)
   const [route, setRoute] = useState<[number, number][]>([])
   const [km, setKm] = useState<number | null>()
+  const initialLoaded = useRef(false)
+
+  // Sync internal state only if not already initialized
+  useEffect(() => {
+    if (!p1 && pickUpCoords) setP1(pickUpCoords)
+  }, [pickUpCoords, p1])
+
+  useEffect(() => {
+    if (!p2 && dropCoords) setP2(dropCoords)
+  }, [dropCoords, p2])
+
+  const geoCoding = async (q: string): Promise<[number, number] | null> => {
+    try {
+      const { data } = await axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1`)
+      if (!data.features.length) return null
+      const [lon, lat] = data.features[0].geometry.coordinates
+      return [lat, lon]
+    } catch (error) {
+      console.log(error)
+      return null
+    }
+  }
 
   const loadRoute = async (p: [number, number], d: [number, number]) => {
     try {
       const { data } = await axios.get(`https://router.project-osrm.org/route/v1/driving/${p[1]},${p[0]};${d[1]},${d[0]}?overview=full&geometries=geojson`)
-      console.log(data)
 
-      if(!data.routes.length) return; 
-      setRoute(data.routes[0].geometry.coordinates.map(([lon, lat]:number[]) => [lat, lon]))
-      const distKm = +((data.routes[0].distance)/1000).toFixed(2)
+      if (!data.routes || !data.routes.length) return
+      setRoute(data.routes[0].geometry.coordinates.map(([lon, lat]: number[]) => [lat, lon]))
+      const distKm = +((data.routes[0].distance) / 1000).toFixed(2)
       setKm(distKm)
-      onDistance(distKm)
+      
+      if (onDistance) { 
+        onDistance(distKm)
+      }
     } catch (error) {
       console.log(error)
     }
   }
 
+  const dragPickUp = async (lat: number, lon: number) => { 
+    const newP1: [number, number] = [lat, lon]
+    setP1(newP1)
+
+    const destination = p2 ?? dropCoords
+    if (destination) { 
+      loadRoute(newP1, destination)
+    }
+  }
+
+  const dragDrop = async (lat: number, lon: number) => { 
+    const newP2: [number, number] = [lat, lon]
+    setP2(newP2)
+
+    const pickup = p1 ?? pickUpCoords
+    if (pickup) { 
+      loadRoute(pickup, newP2)
+    }
+  }
+
   useEffect(() => {
-    if (pickUpCoords && dropCoords) {
+    if (pickUp && drop && (!pickUpCoords || !dropCoords)) {
+      (async () => {
+        const a = await geoCoding(pickUp)
+        const b = await geoCoding(drop)
+
+        if (!a || !b) return
+        setP1(a)
+        setP2(b)
+        loadRoute(a, b)
+      })()
+    }
+  }, [pickUp, drop, pickUpCoords, dropCoords])
+
+  // Initial route load only once on mount
+  useEffect(() => {
+    if (!initialLoaded.current && pickUpCoords && dropCoords) {
+      initialLoaded.current = true
       loadRoute(pickUpCoords, dropCoords)
     }
   }, [pickUpCoords, dropCoords])
+
+  const currentPickup = p1 ?? pickUpCoords
+  const currentDrop = p2 ?? dropCoords
 
   return (
     <div className='relative h-full w-full bg-zinc-100'>
       <MapContainer
         style={{ width: "100%", height: "100%" }}
-        center={pickUpCoords ?? [19.0760, 72.8777]}
+        center={currentPickup ?? [19.0760, 72.8777]}
         zoom={13}
+        zoomControl={false}
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/">CARTO</a> contributors'
           url={process.env.NEXT_PUBLIC_CARDO_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
         />
 
-        {pickUpCoords && dropCoords && <FitBound p1={pickUpCoords} p2={dropCoords} />} 
+        {currentPickup && currentDrop && <FitBound p1={currentPickup} p2={currentDrop} />}
 
-        {pickUpCoords && <Marker position={pickUpCoords} icon={pickUpIcon}  />} 
+        {currentPickup && (
+          <Marker
+            position={currentPickup}
+            icon={pickUpIcon}
+            draggable 
+            eventHandlers={{ 
+              dragend: e => { 
+                const m = e.target.getLatLng()
+                dragPickUp(m.lat, m.lng)
+              }
+            }}
+          />
+        )}
 
-        {dropCoords && <Marker position={dropCoords} icon={dropIcon} />}
+        {currentDrop && (
+          <Marker
+            position={currentDrop}
+            icon={dropIcon}
+            draggable
+            eventHandlers={{ 
+              dragend: e => { 
+                const m = e.target.getLatLng()
+                dragDrop(m.lat, m.lng)
+              }
+            }}
+          />
+        )}
 
-        {route.length > 0 && ( 
-          <> 
-            <Polyline 
-            positions={route} 
-            pathOptions={{color:"#0a0a0a", weight:4, lineCap:"round", lineJoin:"round"}}
-            />
-          </>
-        )} 
+        {route.length > 0 && (
+          <Polyline
+            positions={route}
+            pathOptions={{ color: "#0a0a0a", weight: 4, lineCap: "round", lineJoin: "round" }}
+          />
+        )}
       </MapContainer>
     </div>
   )

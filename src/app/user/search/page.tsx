@@ -1,18 +1,11 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { motion } from "motion/react"
 import { ArrowLeft } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import dynamic from 'next/dynamic'
+import SearchMap from '@/components/SearchMap'
 
-const SearchMap = dynamic(() => import('@/components/SearchMap'), {
-  ssr: false,
-  loading: () => (
-    <div className='w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400 text-xs font-semibold'>
-      Loading map...
-    </div>
-  )
-})
+
 
 function page() {
 
@@ -27,6 +20,14 @@ function page() {
   const dropLat = Number(params.get("droplat"))
   const dropLon = Number(params.get("droplon"))
   const vehicle = params.get("vehicle")
+
+  const pickUpCoords = useMemo<[number, number] | undefined>(() => {
+    return pickUpLat && pickUpLon ? [pickUpLat, pickUpLon] : undefined
+  }, [pickUpLat, pickUpLon])
+
+  const dropCoords = useMemo<[number, number] | undefined>(() => {
+    return dropLat && dropLon ? [dropLat, dropLon] : undefined
+  }, [dropLat, dropLon])
 
   return (
     <div className='min-h-screen bg-zinc-100 text-zinc-900 overflow-hidden'>
@@ -47,8 +48,8 @@ function page() {
         <SearchMap
           pickUp={pickUp}
           drop={drop}
-          pickUpCoords={pickUpLat && pickUpLon ? [pickUpLat, pickUpLon] : undefined}
-          dropCoords={dropLat && dropLon ? [dropLat, dropLon] : undefined}
+          pickUpCoords={pickUpCoords}
+          dropCoords={dropCoords}
           onChange={(p, d) => { setPickUp(p); setDrop(d) }}
           onDistance={setKm}
         />
