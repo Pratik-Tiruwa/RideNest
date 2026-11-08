@@ -3,7 +3,16 @@ import React, { useState } from 'react'
 import { motion } from "motion/react"
 import { ArrowLeft } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import SearchMap from '@/components/SearchMap'
+import dynamic from 'next/dynamic'
+
+const SearchMap = dynamic(() => import('@/components/SearchMap'), {
+  ssr: false,
+  loading: () => (
+    <div className='w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400 text-xs font-semibold'>
+      Loading map...
+    </div>
+  )
+})
 
 function page() {
 
