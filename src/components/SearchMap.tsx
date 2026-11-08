@@ -77,7 +77,7 @@ const dropIcon = new L.DivIcon({
   iconAnchor: [45, 58]
 })
 
-function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props) {
+function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance, onChange }: Props) {
 
   const [p1, setP1] = useState<[number, number] | undefined>(pickUpCoords)
   const [p2, setP2] = useState<[number, number] | undefined>(dropCoords)
@@ -107,6 +107,33 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
     }
   }
 
+  const reverseGeoCoding = async (lat: number, lon: number) => {
+    const { data } = await axios.get(`https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`)
+
+    if (!data.features.length) return;
+
+    const p = data.features[0].properties
+
+    const locality = p.locality || p.suburb || ""
+
+    const city = p.city || (p.county ? p.county.replace("District", "") : "") || p.district || ""
+
+    const street = p.street && p.street !== p.name ? p.street : ""
+
+    const addressParts = [
+      p.name,
+      street,
+      locality,
+      city,
+      p.state,
+      p.postcode,
+      p.country
+    ]
+
+    return Array.from(new Set(addressParts.filter(Boolean))).join(", ")
+  }
+
+
   const loadRoute = async (p: [number, number], d: [number, number]) => {
     try {
       const { data } = await axios.get(`https://router.project-osrm.org/route/v1/driving/${p[1]},${p[0]};${d[1]},${d[0]}?overview=full&geometries=geojson`)
@@ -125,6 +152,7 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
   }
 
   const dragPickUp = async (lat: number, lon: number) => {
+    const addr = await reverseGeoCoding(lat, lon)
     const newP1: [number, number] = [lat, lon]
     setP1(newP1)
 
@@ -132,9 +160,11 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
     if (destination) {
       loadRoute(newP1, destination)
     }
+    onChange?.(addr!, drop)
   }
 
   const dragDrop = async (lat: number, lon: number) => {
+    const addr = await reverseGeoCoding(lat, lon)
     const newP2: [number, number] = [lat, lon]
     setP2(newP2)
 
@@ -142,6 +172,7 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
     if (pickup) {
       loadRoute(pickup, newP2)
     }
+    onChange?.(pickUp, addr!)
   }
 
   useEffect(() => {
@@ -247,29 +278,29 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
               <MapPin size={15} className='text-zinc-800' />
             </div>
             <div className='text-center'>
-            <p className='text-zinc-900 text-xs font-black tracking-[0.22em] uppercase'>Loading Map</p>
-            <p className='text-zinc-400 text-[10px] font-medium tracking-wider mt-0.5'>Plotting your route...</p>
+              <p className='text-zinc-900 text-xs font-black tracking-[0.22em] uppercase'>Loading Map</p>
+              <p className='text-zinc-400 text-[10px] font-medium tracking-wider mt-0.5'>Plotting your route...</p>
             </div>
 
           </motion.div>
         )}
-      </AnimatePresence> 
+      </AnimatePresence>
 
 
-      <AnimatePresence> 
-        {ready && km !== null && ( 
+      <AnimatePresence>
+        {ready && km !== null && (
           <motion.div
-          initial= {{opacity : 0, y : 8, scale : 0.95}}
-          animate = {{ opacity : 1, y : 0, scale : 1}}
-          exit={{ opacity : 0}}
-          transition={{ duration : 0.4, ease : [0.22, 1, 0.36, 1]}} 
-          className='absolute bottom-6 left-4 z-[500] flex items-center gap-2 g-white border border-zinc-200 px-3.5 py-2 rounded-xl shadow-lg'
-          >  
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className='absolute bottom-20 left-4 z-[500] flex items-center gap-2 bg-white border border-zinc-200 px-3.5 py-2 rounded-xl shadow-lg'
+          >
 
-          <Navigation2 size={13} className='text-zinc-900' /> 
-          <span className='text-zinc-900 text-xs font-bold'>{km} km</span>
-          <span className='w-px h-3 bg-zinc-200' />
-          <span> ~{Math.max(3, Math.round((km / 25) * 60))} min</span>
+            <Navigation2 size={13} className='text-zinc-900' />
+            <span className='text-zinc-900 text-xs font-bold'>{km} km</span>
+            <span className='w-px h-3 bg-zinc-200' />
+            <span> ~{Math.max(3, Math.round((km / 25) * 60))} min</span>
 
           </motion.div>
         )}
