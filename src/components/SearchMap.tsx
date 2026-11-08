@@ -47,7 +47,7 @@ const pickUpIcon = new L.DivIcon({
   className: "",
   iconSize: [90, 58],
   iconAnchor: [45, 58]
-}) 
+})
 
 const dropIcon = new L.DivIcon({
   html: `<div style="display:flex; flex-direction:column; align-items:center; filter:drop-shadow(0 6px 18px rgba(0,0,0,0.22));">  
@@ -80,8 +80,8 @@ function SearchMap({ pickUpCoords, dropCoords }: Props) {
         zoom={13}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+          attribution='&copy; <a href="https://carto.com/">CARTO</a> contributors'
+          url={process.env.NEXT_PUBLIC_CARDO_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
         />
 
         {pickUpCoords && dropCoords && (
