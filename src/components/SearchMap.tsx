@@ -3,6 +3,9 @@ import React, { useEffect, useRef, useState } from 'react'
 import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
 import L from "leaflet"
 import axios from 'axios'
+import { AnimatePresence } from 'motion/react'
+import { motion } from "motion/react"
+import { MapPin } from 'lucide-react'
 
 type Props = {
   pickUp: string
@@ -80,6 +83,7 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
   const [p2, setP2] = useState<[number, number] | undefined>(dropCoords)
   const [route, setRoute] = useState<[number, number][]>([])
   const [km, setKm] = useState<number | null>()
+  const [ready, setReady] = useState(false)
   const initialLoaded = useRef(false)
 
   // Sync internal state only if not already initialized
@@ -111,8 +115,8 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
       setRoute(data.routes[0].geometry.coordinates.map(([lon, lat]: number[]) => [lat, lon]))
       const distKm = +((data.routes[0].distance) / 1000).toFixed(2)
       setKm(distKm)
-      
-      if (onDistance) { 
+
+      if (onDistance) {
         onDistance(distKm)
       }
     } catch (error) {
@@ -120,27 +124,28 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
     }
   }
 
-  const dragPickUp = async (lat: number, lon: number) => { 
+  const dragPickUp = async (lat: number, lon: number) => {
     const newP1: [number, number] = [lat, lon]
     setP1(newP1)
 
     const destination = p2 ?? dropCoords
-    if (destination) { 
+    if (destination) {
       loadRoute(newP1, destination)
     }
   }
 
-  const dragDrop = async (lat: number, lon: number) => { 
+  const dragDrop = async (lat: number, lon: number) => {
     const newP2: [number, number] = [lat, lon]
     setP2(newP2)
 
     const pickup = p1 ?? pickUpCoords
-    if (pickup) { 
+    if (pickup) {
       loadRoute(pickup, newP2)
     }
   }
 
   useEffect(() => {
+    setReady(true)
     if (pickUp && drop && (!pickUpCoords || !dropCoords)) {
       (async () => {
         const a = await geoCoding(pickUp)
@@ -149,7 +154,8 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
         if (!a || !b) return
         setP1(a)
         setP2(b)
-        loadRoute(a, b)
+        await loadRoute(a, b)
+        setReady(false)
       })()
     }
   }, [pickUp, drop, pickUpCoords, dropCoords])
@@ -184,9 +190,9 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
           <Marker
             position={currentPickup}
             icon={pickUpIcon}
-            draggable 
-            eventHandlers={{ 
-              dragend: e => { 
+            draggable
+            eventHandlers={{
+              dragend: e => {
                 const m = e.target.getLatLng()
                 dragPickUp(m.lat, m.lng)
               }
@@ -199,8 +205,8 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
             position={currentDrop}
             icon={dropIcon}
             draggable
-            eventHandlers={{ 
-              dragend: e => { 
+            eventHandlers={{
+              dragend: e => {
                 const m = e.target.getLatLng()
                 dragDrop(m.lat, m.lng)
               }
@@ -215,6 +221,39 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
           />
         )}
       </MapContainer>
+
+
+      <AnimatePresence>
+        {!ready && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.45 }}
+            className='absolute inset-0 z-[999] bg-white/90 backdrop-blur-md flex flex-col items-center justify-center gap-4'
+          >
+
+            <div className='relative w-14 h-14 flex items-center justify-center'>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.1, repeat: Infinity, ease: "linear" }}
+                className='absolute inset-0 rounded-full border-2 border-transparent border-t-zinc-900'
+              />
+
+              <motion.div
+                animate={{ rotate: -360 }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: "linear" }}
+                className='absolute inset-2 rounded-full border border-transparent border-t-zinc-300'
+              />
+              <MapPin size={15} className='text-zinc-800' />
+            </div>
+            <div className='text-center'>
+            <p className='text-zinc-900 text-xs font-black tracking-[0.22em] uppercase'>Loading Map</p>
+            <p className='text-zinc-400 text-[10px] font-medium tracking-wider mt-0.5'>Plotting your route...</p>
+            </div>
+
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
