@@ -5,7 +5,7 @@ import L from "leaflet"
 import axios from 'axios'
 import { AnimatePresence } from 'motion/react'
 import { motion } from "motion/react"
-import { MapPin } from 'lucide-react'
+import { MapPin, Navigation2 } from 'lucide-react'
 
 type Props = {
   pickUp: string
@@ -82,7 +82,7 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
   const [p1, setP1] = useState<[number, number] | undefined>(pickUpCoords)
   const [p2, setP2] = useState<[number, number] | undefined>(dropCoords)
   const [route, setRoute] = useState<[number, number][]>([])
-  const [km, setKm] = useState<number | null>()
+  const [km, setKm] = useState<number | null>(0)
   const [ready, setReady] = useState(false)
   const initialLoaded = useRef(false)
 
@@ -250,6 +250,26 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance }: Props
             <p className='text-zinc-900 text-xs font-black tracking-[0.22em] uppercase'>Loading Map</p>
             <p className='text-zinc-400 text-[10px] font-medium tracking-wider mt-0.5'>Plotting your route...</p>
             </div>
+
+          </motion.div>
+        )}
+      </AnimatePresence> 
+
+
+      <AnimatePresence> 
+        {ready && km !== null && ( 
+          <motion.div
+          initial= {{opacity : 0, y : 8, scale : 0.95}}
+          animate = {{ opacity : 1, y : 0, scale : 1}}
+          exit={{ opacity : 0}}
+          transition={{ duration : 0.4, ease : [0.22, 1, 0.36, 1]}} 
+          className='absolute bottom-6 left-4 z-[500] flex items-center gap-2 g-white border border-zinc-200 px-3.5 py-2 rounded-xl shadow-lg'
+          >  
+
+          <Navigation2 size={13} className='text-zinc-900' /> 
+          <span className='text-zinc-900 text-xs font-bold'>{km} km</span>
+          <span className='w-px h-3 bg-zinc-200' />
+          <span> ~{Math.max(3, Math.round((km / 25) * 60))} min</span>
 
           </motion.div>
         )}
