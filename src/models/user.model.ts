@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 
 type VideoKycStatus =
     "not_required"
@@ -8,7 +8,6 @@ type VideoKycStatus =
     | "reject" 
 
 export interface IUser extends Document {
-    _id?: mongoose.Types.ObjectId | string;
     name: string;
     email: string;
     password?: string;
@@ -23,6 +22,12 @@ export interface IUser extends Document {
     videoKycStatus : VideoKycStatus
     videoKycRoomId : string, 
     videoKycRejectionReason : string,
+    socketId?: string | null, 
+    location? : {
+        type : "Point",
+        coordinates : [number, number],
+    }, 
+    isOnline?: boolean,
     createdAt: Date;
     updatedAt: Date;
 }
@@ -87,11 +92,26 @@ const userSchema = new mongoose.Schema<IUser>({
     },
     otpExpiresAt: {
         type: Date,
-
+    }, 
+    socketId :  {
+        type : String
+    }, 
+    location : { 
+        type : { 
+            type : String, 
+            enum:["Point"]
+        }, 
+        coordinates : [Number]
+    }, 
+    isOnline : {
+        type : Boolean, 
+        default : false, 
+        index : true
     }
 
 }, { timestamps: true })
 
+userSchema.index({location:"2dsphere"})
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 export default User
