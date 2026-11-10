@@ -107,30 +107,36 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance, onChang
     }
   }
 
-  const reverseGeoCoding = async (lat: number, lon: number) => {
-    const { data } = await axios.get(`https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`)
+  const reverseGeoCoding = async (lat: number, lon: number): Promise<string | null> => {
+    try {
+      const { data } = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`, {
+        timeout: 3500
+      })
 
-    if (!data.features.length) return;
-
-    const p = data.features[0].properties
-
-    const locality = p.locality || p.suburb || ""
-
-    const city = p.city || (p.county ? p.county.replace("District", "") : "") || p.district || ""
-
-    const street = p.street && p.street !== p.name ? p.street : ""
-
-    const addressParts = [
-      p.name,
-      street,
-      locality,
-      city,
-      p.state,
-      p.postcode,
-      p.country
-    ]
-
-    return Array.from(new Set(addressParts.filter(Boolean))).join(", ")
+      if (data?.address) {
+        const addr = data.address
+        const parts = [
+          addr.road || addr.pedestrian || addr.suburb,
+          addr.neighbourhood || addr.suburb,
+          addr.city || addr.town || addr.village || addr.county,
+          addr.state
+        ].filter(Boolean)
+        return Array.from(new Set(parts)).join(", ") || data.display_name
+      }
+    } catch {
+      // Fallback: BigDataCloud free client geocoding API
+      try {
+        const { data } = await axios.get(
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`,
+          { timeout: 3000 }
+        )
+        const parts = [data.locality, data.city, data.principalSubdivision].filter(Boolean)
+        return Array.from(new Set(parts)).join(", ") || null
+      } catch (err) {
+        console.warn("Reverse geocoding error : ", err)
+      }
+    }
+    return null
   }
 
 
@@ -152,7 +158,6 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance, onChang
   }
 
   const dragPickUp = async (lat: number, lon: number) => {
-    const addr = await reverseGeoCoding(lat, lon)
     const newP1: [number, number] = [lat, lon]
     setP1(newP1)
 
@@ -160,11 +165,14 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance, onChang
     if (destination) {
       loadRoute(newP1, destination)
     }
-    onChange?.(addr!, drop)
+
+    const addr = await reverseGeoCoding(lat, lon)
+    if (addr) {
+      onChange?.(addr, drop)
+    }
   }
 
   const dragDrop = async (lat: number, lon: number) => {
-    const addr = await reverseGeoCoding(lat, lon)
     const newP2: [number, number] = [lat, lon]
     setP2(newP2)
 
@@ -172,7 +180,11 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance, onChang
     if (pickup) {
       loadRoute(pickup, newP2)
     }
-    onChange?.(pickUp, addr!)
+
+    const addr = await reverseGeoCoding(lat, lon)
+    if (addr) {
+      onChange?.(pickUp, addr)
+    }
   }
 
   useEffect(() => {
@@ -260,7 +272,7 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance, onChang
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.45 }}
-            className='absolute inset-0 z-[999] bg-white/90 backdrop-blur-md flex flex-col items-center justify-center gap-4'
+            className='absolute inset-0 z-999 bg-white/90 backdrop-blur-md flex flex-col items-center justify-center gap-4'
           >
 
             <div className='relative w-14 h-14 flex items-center justify-center'>
@@ -294,7 +306,7 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance, onChang
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className='absolute bottom-20 left-4 z-[500] flex items-center gap-2 bg-white border border-zinc-200 px-3.5 py-2 rounded-xl shadow-lg'
+            className='absolute bottom-20 left-4 z-500 flex items-center gap-2 bg-white border border-zinc-200 px-3.5 py-2 rounded-xl shadow-lg'
           >
 
             <Navigation2 size={13} className='text-zinc-900' />
