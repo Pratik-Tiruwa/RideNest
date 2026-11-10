@@ -6,6 +6,7 @@ import PartnerDashboard from "@/components/PartnerDashboard";
 import connectDb from "@/lib/db";
 import User from "@/models/user.model";
 import AdminDashboard from "@/components/AdminDashboard";
+import GeoUpdater from "@/components/GeoUpdater";
 
 
 export default async function Home() {
@@ -17,6 +18,7 @@ export default async function Home() {
 
   return (
     <main className="w-full min-h-screen bg-white">
+      <GeoUpdater userId={user._id.toString()} />
       {user?.role == "partner"
         ?
         <>
