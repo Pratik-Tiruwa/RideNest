@@ -11,7 +11,7 @@ function GeoUpdater({ userId }: { userId: string }) {
         if (!navigator.geolocation) return;
 
         socketRef.current = getSocket();
-        socketRef.current.emit("identity", {data : userId});
+        socketRef.current.emit("identity", userId);
     }, [userId])
 
     return null;
