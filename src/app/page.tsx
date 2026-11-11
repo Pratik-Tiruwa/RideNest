@@ -12,13 +12,16 @@ import GeoUpdater from "@/components/GeoUpdater";
 export default async function Home() {
 
   const session = await auth();
-  await connectDb();
-  const user = await User.findOne({ email: session?.user?.email })
+  let user = null;
+  if (session?.user?.email) {
+    await connectDb();
+    user = await User.findOne({ email: session.user.email });
+  }
 
 
   return (
     <main className="w-full min-h-screen bg-white">
-      <GeoUpdater userId={user._id.toString()} />
+      {user?._id && <GeoUpdater userId={user._id.toString()} />}
       {user?.role == "partner"
         ?
         <>
