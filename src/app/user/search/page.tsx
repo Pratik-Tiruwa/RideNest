@@ -8,6 +8,7 @@ import axios from 'axios'
 import { IVehicle } from '@/models/vehicle.model'
 import { MdElectricRickshaw } from "react-icons/md"
 import { FaTruckPickup } from "react-icons/fa6"
+import VehicleCard from '@/components/VehicleCard'
 
 const SearchMap = dynamic(() => import('@/components/SearchMap'), {
   ssr: false,
@@ -155,7 +156,7 @@ function page() {
 
               {
                 meta && <div className='text-zinc-400 text0xs mt-0.5'>
-                  {meta.label} rides near ypur pickup
+                  {meta.label} rides near your pickup
                 </div>
               }
             </div>
@@ -215,6 +216,24 @@ function page() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
+            {vehicles.map((v, i) => (
+              <motion.div
+              key={i}
+              initial = {{ opacity : 0, y : 24}}
+              animate = {{ opacity : 1, y : 0}}
+              transition={{ delay : i * 0.06, duration : 0.38, ease : [0.22, 1, 0.36, 1]}}
+              >  
+
+              <VehicleCard 
+              vehicle = {v} 
+              distance = {km}
+              />
+
+              </motion.div>
+            ))}
+          </div>
 
         </div>
 
