@@ -2,7 +2,7 @@
 import { IVehicle } from '@/models/vehicle.model'
 import React from 'react'
 import { motion } from "motion/react"
-import { Bike, Star } from 'lucide-react'
+import { Bike, Clock, Gauge, IndianRupee, Star } from 'lucide-react'
 import { MdElectricRickshaw } from "react-icons/md"
 import { Car } from 'lucide-react'
 import { FaTruckPickup } from 'react-icons/fa'
@@ -20,7 +20,13 @@ const TYPE_CONFIG: any = {
 
 function VehicleCard({ vehicle, distance }: { vehicle: IVehicle, distance: number | undefined }) {
 
-    const { Icon, label } = TYPE_CONFIG[vehicle.type]
+    const { Icon, label } = TYPE_CONFIG[vehicle.type] 
+
+    let estimated:number=0;
+    if (vehicle.baseFare && vehicle.pricePerKM && distance) {
+     estimated = Math.round(vehicle.baseFare + vehicle.pricePerKM * distance)
+    }
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -58,6 +64,71 @@ function VehicleCard({ vehicle, distance }: { vehicle: IVehicle, distance: numbe
                     <Star size={9} className='fill-zinc-900 text-zinc-900' />
                     4.8
                 </div>
+            </div>
+
+
+            <div className='h-px bg-zinc-100' />
+
+            <div className='flex flex-col flex-1 p-5 gap-4'>
+
+                <div className='flex items-start justify-between gap-3'>
+                    <div className='min-w-0'>
+                        <h3 className='text-zinc-900 text-base font-black tracking-tight leading-tight truncate'>{vehicle.vehicleModel}</h3>
+                        <div className='mt-1.5 inline-flex items-center bg-zinc-100 px-2.5 py-1 rounded-lg border border-zinc-200'>
+                            <span className='text-zinc-500 text-xs font-black tracking-[0.2em] font-mono uppercase'>{vehicle.number}</span>
+                        </div>
+                    </div>
+
+                    <div className='shrink-0 w-10 h-10 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center'>
+                        <Icon size={17} className="text-zinc-700" />
+                    </div>
+                </div>
+
+
+                <div className='grid grid-cols-2 gap-2'>
+
+                    <div className='bg-zinc-50 border border-zinc-100 rounded-2xl px-3.5 py-3'>
+                        <div className='flex items-center gap-1.5 mb-1'>
+                            <Gauge size={11} className='text-zinc-400' />
+                            <p className='text-zinc-400 text-[9px] uppercase tracking-widest font-bold'>Per KM</p>
+                        </div>
+                        <p className='text-zinc-900 text-sm flex items-center font-black'>
+                            <IndianRupee size={11} />{vehicle.pricePerKM}
+                        </p>
+                    </div>
+
+                    <div className='bg-zinc-50  border border-zinc-100 rounded-2xl px-3.5 py-3'>
+
+                        <div className='flex items-center gap-1.5 mb-1'>
+                            <Clock size={11} className='text-zinc-400' />
+                            <p className='text-zinc-400 text-[9px] uppercase tracking-widest font-bold'>Waiting</p>
+                        </div>
+                        <div className='text-zinc-900 text-sm font-black flex items-center'>
+                            <IndianRupee size={11} />{vehicle.waitingCharge}
+                            <span>/min</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div className='flex items-end justify-between pt-3 border-t border-zinc-100'>
+                    <div>
+                        <p className='text-zinc-400 text-[9px] uppercase tracking-widest font-bold mb-0.5'>Est. Fare</p>
+
+                        <motion.div
+                            key={estimated}
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className='flex items-baseline gap-0.5'
+                        >
+
+                            <IndianRupee size={16} className='text-zinc-900 mb-0.5' strokeWidth={2.5} /> 
+                            <span className='text-zinc-900 text-3xl font-black tracking-tight leading-none '>{estimated}</span>    
+                        </motion.div>
+                    </div>
+                </div>
+
             </div>
 
         </motion.div>
