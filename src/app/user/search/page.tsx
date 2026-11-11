@@ -3,8 +3,12 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { motion } from "motion/react"
 import { ArrowLeft, MapPin, Navigation } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import SearchMap from '@/components/SearchMap'
+import dynamic from 'next/dynamic'
 import axios from 'axios'
+
+const SearchMap = dynamic(() => import('@/components/SearchMap'), {
+  ssr: false,
+})
 
 
 
