@@ -159,7 +159,7 @@ function page() {
 
           <div className='flex-1 min-w-0'>
             <h1 className='text-zinc-900 text-lg font-black tracking-tight'>Book a Ride</h1>
-            <p className='text-zinc-400 text-xs mt-0.5'>Fill in teh details below</p>
+            <p className='text-zinc-400 text-xs mt-0.5'>Fill in the details below</p>
           </div>
 
           <div className='flex items-center gap-1.5 shrink-0'>
