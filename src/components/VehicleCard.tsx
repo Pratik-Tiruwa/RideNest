@@ -2,7 +2,7 @@
 import { IVehicle } from '@/models/vehicle.model'
 import React from 'react'
 import { motion } from "motion/react"
-import { Bike, Clock, Gauge, IndianRupee, Star } from 'lucide-react'
+import { ArrowRight, Bike, Clock, Gauge, IndianRupee, Star } from 'lucide-react'
 import { MdElectricRickshaw } from "react-icons/md"
 import { Car } from 'lucide-react'
 import { FaTruckPickup } from 'react-icons/fa'
@@ -20,11 +20,11 @@ const TYPE_CONFIG: any = {
 
 function VehicleCard({ vehicle, distance }: { vehicle: IVehicle, distance: number | undefined }) {
 
-    const { Icon, label } = TYPE_CONFIG[vehicle.type] 
+    const { Icon, label } = TYPE_CONFIG[vehicle.type]
 
-    let estimated:number=0;
+    let estimated: number = 0;
     if (vehicle.baseFare && vehicle.pricePerKM && distance) {
-     estimated = Math.round(vehicle.baseFare + vehicle.pricePerKM * distance)
+        estimated = Math.round(vehicle.baseFare + vehicle.pricePerKM * distance)
     }
 
     return (
@@ -123,10 +123,25 @@ function VehicleCard({ vehicle, distance }: { vehicle: IVehicle, distance: numbe
                             className='flex items-baseline gap-0.5'
                         >
 
-                            <IndianRupee size={16} className='text-zinc-900 mb-0.5' strokeWidth={2.5} /> 
-                            <span className='text-zinc-900 text-3xl font-black tracking-tight leading-none '>{estimated}</span>    
+                            <IndianRupee size={16} className='text-zinc-900 mb-0.5' strokeWidth={2.5} />
+                            <span className='text-zinc-900 text-3xl font-black tracking-tight leading-none '>{estimated}</span>
                         </motion.div>
                     </div>
+
+                    <motion.button
+                        whileTap={{ scale: 0.92 }}
+                        whileHover={{ scale: 1.04 }}
+                        className='flex items-center gap-2 bg-zinc-900 hover:bg-black text-white text-sm font-black px-6 py-3.5 rounded-2xl transition-colors shadow-md'
+                    >
+                        Book
+                        <motion.div
+                        initial = {{ x : 0}}
+                        whileHover = {{ x : 3}}
+                        transition={{ delay : 0.2}}
+                        >
+                            <ArrowRight size={14} />
+                        </motion.div>
+                    </motion.button>
                 </div>
 
             </div>
