@@ -261,7 +261,7 @@ function page() {
                     dropLon:String(dropLon), 
                     mobile:String(mobile)
                   })
-                  router.push(`/checkout?${url.toString()}`)
+                  router.push(`/user/checkout?${url.toString()}`)
                 }
               }
               />
