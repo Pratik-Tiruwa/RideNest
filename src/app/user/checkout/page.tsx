@@ -11,7 +11,7 @@ const VEHICLE_META: any = {
     auto: { label: "Auto", Icon: MdElectricRickshaw },
     car: { label: "Car", Icon: Car },
     loading: { label: "Loading", Icon: FaTruckPickup },
-    truck: { labeel: "Truck", Icon: Truck }
+    truck: { label: "Truck", Icon: Truck }
 }
 
 
