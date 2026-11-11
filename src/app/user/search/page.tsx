@@ -1,15 +1,25 @@
 'use client'
 import React, { useEffect, useMemo, useState } from 'react'
-import { motion } from "motion/react"
-import { ArrowLeft, MapPin, Navigation } from 'lucide-react'
+import { AnimatePresence, delay, motion } from "motion/react"
+import { ArrowLeft, Bike, Car, MapPin, Navigation, Truck, Zap } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import axios from 'axios'
+import { IVehicle } from '@/models/vehicle.model'
+import { MdElectricRickshaw } from "react-icons/md"
+import { FaTruckPickup } from "react-icons/fa6"
 
 const SearchMap = dynamic(() => import('@/components/SearchMap'), {
   ssr: false,
 })
 
+const VEHICLE_META: any = {
+  bike: { label: "Bike", Icon: Bike },
+  auto: { label: "Auto", Icon: MdElectricRickshaw },
+  car: { label: "Car", Icon: Car },
+  loading: { label: "Loading", Icon: FaTruckPickup },
+  truck: { labeel: "Truck", Icon: Truck }
+}
 
 
 function page() {
@@ -24,7 +34,12 @@ function page() {
   const pickUpLon = Number(params.get("pickuplon"))
   const dropLat = Number(params.get("droplat"))
   const dropLon = Number(params.get("droplon"))
-  const vehicle = params.get("vehicle")
+  const vehicle = params.get("vehicle") || ""
+  const [vehicles, setVehicles] = useState<IVehicle[]>([])
+  const [loading, setLoading] = useState(false)
+
+
+  const meta = VEHICLE_META[vehicle]
 
   const pickUpCoords = useMemo<[number, number] | undefined>(() => {
     return pickUpLat && pickUpLon ? [pickUpLat, pickUpLon] : undefined
@@ -35,13 +50,16 @@ function page() {
   }, [dropLat, dropLon])
 
   const getNearByVehicles = async (latitude: number, longitude: number, vehicleType: string | null) => {
+    setLoading(true)
     try {
       const { data } = await axios.post("/api/vehicles/near-by", {
         latitude, longitude, vehicleType
       })
-      console.log(data)
+      setVehicles(data)
+      setLoading(false)
     } catch (error) {
       console.log(error)
+      setLoading(false)
     }
   }
 
@@ -49,7 +67,7 @@ function page() {
     if (pickUpLat && pickUpLon) {
       getNearByVehicles(pickUpLat, pickUpLon, vehicle)
     }
-  }, [pickUpLat, pickUpLon])
+  }, [pickUpLat, pickUpLon, pickUp])
 
   return (
     <div className='min-h-screen bg-zinc-100 text-zinc-900 overflow-hidden'>
@@ -121,6 +139,57 @@ function page() {
 
 
           </motion.div>
+
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className='flex items-center justify-between mb-4'
+          >
+
+            <div>
+              <h2 className='text-zinc-900 text-lg font-black tracking-tight'>
+                {loading ? "Finding Vehicles" : vehicles.length > 0 ? "Available" : "No nearby Vehciles"}
+              </h2>
+
+              {
+                meta && <div className='text-zinc-400 text0xs mt-0.5'>
+                  {meta.label} rides near ypur pickup
+                </div>
+              }
+            </div>
+
+            <AnimatePresence mode='wait'>
+              {loading ? (
+                <motion.div
+                  key={"searching"}
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.85 }}
+                  className='flex items-center gap-2 bg-zinc-100 border border-zinc-200 px-3 py-1.5 rounded-full'
+                >
+                  <div className='w-3.5 h-3.5 rounded-full border-2 border-zinc-3-- border-t-zinc-700 animate-spin' />
+                    <span className='text-zinc-500 text-xs font-semibold'>Searching...</span>
+                  
+                </motion.div>
+              ) : 
+              vehicle.length>0 ? ( 
+                <motion.div
+                key={"live"}
+                initial = {{ opacity : 0}}
+                animate = {{ opacity : 1}}
+                className='flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full'
+                >
+                  <Zap size={11} className='text-emerald-600 fill-emerald-600' />
+                  <span className='text-emerald-700 text-xs font-bold'>Live</span>
+                </motion.div>
+              ):null
+            }
+            </AnimatePresence>
+
+          </motion.div>
+
         </div>
 
       </motion.div>
