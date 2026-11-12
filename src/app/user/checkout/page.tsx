@@ -124,6 +124,16 @@ function page() {
                             </div>
 
                         </div>
+                    </motion.div> 
+
+                    <motion.div
+                    initial = {{opacity : 0, y : 20}}
+                    animate = {{opacity : 1, y : 0}}
+                    transition={{ delay : 0.4, duration : 0.5, ease : [0.22, 1, 0.36, 1]}} 
+                    className='bg-white rounded-3xl border border-zinc-200 overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.07) flex flex-col'
+                    > 
+                    <div className='h-1 bg-zinc-900' />
+
                     </motion.div>
                 </div>
             </div>
