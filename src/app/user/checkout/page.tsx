@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import { motion } from "motion/react"
-import { Bike, Car, MapPin, Truck } from 'lucide-react'
+import { Bike, Car, MapPin, Navigation, Truck } from 'lucide-react'
 import { MdElectricRickshaw } from "react-icons/md"
 import { FaTruckPickup } from "react-icons/fa6"
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -88,6 +88,21 @@ function page() {
                                         <div className='text-sm font-semibold tex-zinc-900 leading-snug truncate'>{pickUp}</div>
                                     </div>
                                     <MapPin size={14} className='text-zinc-400 shrink-0 mt-1' />
+                                </div>
+                            </div> 
+
+                             <div className='bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden mb-8'>
+                                <div className='flex gap-4 px-5 py-4 border-b border-zinc-100'>
+
+                                    <div className='flex flex-col items-center shrink-0 pt-0.5'>
+                                        <div className='w-3 h-3 rounded-full bg-zinc-900 border-2 border-white ring-1 ring-zinc-300' />
+                                    </div>
+
+                                    <div className='flex-1 min-w-0'>
+                                        <div className='text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400 mb-0.5'>Drop</div>
+                                        <div className='text-sm font-semibold tex-zinc-900 leading-snug truncate'>{drop}</div>
+                                    </div>
+                                    <Navigation size={14} className='text-zinc-400 shrink-0 mt-1' />
                                 </div>
                             </div>
                         </div>
