@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react'
-import { motion } from "motion/react"
-import { Bike, Car, IndianRupee, MapPin, Navigation, Truck } from 'lucide-react'
+import { AnimatePresence, motion } from "motion/react"
+import { ArrowRight, Bike, Car, Clock, CreditCard, IndianRupee, MapPin, Navigation, ShieldCheck, Truck } from 'lucide-react'
 import { MdElectricRickshaw } from "react-icons/md"
 import { FaTruckPickup } from "react-icons/fa6"
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -13,6 +13,9 @@ const VEHICLE_META: any = {
     loading: { label: "Loading", Icon: FaTruckPickup },
     truck: { label: "Truck", Icon: Truck }
 }
+
+type Status = "idle" | "requested" | "awaiting_payment"
+    | "rejected" | "expired" | "cancelled" | "payment" | "confirmed";
 
 
 function page() {
@@ -28,6 +31,7 @@ function page() {
     const dropLon = Number(params.get("dropLon"))
     const vehicle = params.get("vehicle") || ""
     const fare = params.get("fare") || ""
+    const [status, setStatus] = useState<Status>("idle")
 
     const { Icon, label } = VEHICLE_META[vehicle]
 
@@ -102,7 +106,7 @@ function page() {
                                     </div>
                                     <Navigation size={14} className='text-zinc-400 shrink-0 mt-1' />
                                 </div>
-                            </div> 
+                            </div>
 
                             <div className='flex items-end justify-between pt-6 border-t border-zinc-100'>
                                 <div>
@@ -111,28 +115,71 @@ function page() {
                                 </div>
 
                                 <motion.div
-                                initial = {{ scale : 0.8, opacity : 0}}
-                                animate = {{ scale : 1, opacity : 1}}
-                                transition={{delay : 0.3, type:"spring", stiffness : 200}}
-                                className='flex items-baseline gap-1'
-                                > 
-                                <span className='text-zinc-400 text-lg font-black'> <IndianRupee /> </span>
-                                <span className='text-zinc-900 text-5xl font-black tracking-tight leading-none'>{fare}</span>
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                                    className='flex items-baseline gap-1'
+                                >
+                                    <span className='text-zinc-400 text-lg font-black'> <IndianRupee /> </span>
+                                    <span className='text-zinc-900 text-5xl font-black tracking-tight leading-none'>{fare}</span>
 
                                 </motion.div>
 
                             </div>
 
                         </div>
-                    </motion.div> 
+                    </motion.div>
 
                     <motion.div
-                    initial = {{opacity : 0, y : 20}}
-                    animate = {{opacity : 1, y : 0}}
-                    transition={{ delay : 0.4, duration : 0.5, ease : [0.22, 1, 0.36, 1]}} 
-                    className='bg-white rounded-3xl border border-zinc-200 overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.07)] flex flex-col'
-                    > 
-                    <div className='h-1 bg-zinc-900' />
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                        className='bg-white rounded-3xl border border-zinc-200 overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.07)] flex flex-col'
+                    >
+                        <div className='h-1 bg-zinc-900' />
+
+                        <div className='flex-1 p-8 sm:p-10 flex flex-col'>
+                            <AnimatePresence mode='wait'>
+                                {status == "idle" && (
+                                    <motion.div
+
+                                        initial={{ opacity: 0, y: 12 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -12 }}
+                                        transition={{ duration: 0.3 }}
+                                        className='flex flex-col flex-1 justify-between'
+                                    >
+                                        <div >
+                                            <p className='text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400 mb-1'>Ready to go?</p>
+                                            <h3 className='text-2xl font-black mb-6 text-zinc-900 '>Confirm your ride</h3>
+                                            <div className='bg-zinc-50 border border-zinc-100 rounded-xl p-5 space-y-3'>
+                                                {
+                                                    [
+                                                        { icon: <Clock size={14} />, text: "Driver will respond within 2 minutes" },
+                                                        { icon: <ShieldCheck size={14} />, text: "Verified & insured drivers only" },
+                                                        { icon: <CreditCard size={14} />, text: "Pay after driver accepts" },
+                                                    ].map((item, i) => ( 
+                                                        <div key={i} className='flex items-center gap-3'>
+                                                            <div className='w-7 h-7 rounded-xl bg-zinc-200 flex items-center justify-center text-zinc-600 shrink-0'>{item.icon}</div>
+                                                            <p className='text-zinc-500 text-xs font-medium'>{item.text}</p> 
+                                                        </div>
+                                                    ))
+                                                }
+                                            </div>
+                                        </div>  
+
+                                        <motion.button 
+                                        whileTap={{scale : 0.97}}
+                                        whileHover={{scale : 1.02}}
+                                        className='w-full mt-8 h-14 bg-zinc-900 hover:bg-black disabled:opacity-40 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2.5 transition-colors shadow-md'
+                                        >
+                                            <span>Request Ride </span> <ArrowRight size={15} />
+                                        </motion.button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                        </div>
 
                     </motion.div>
                 </div>
