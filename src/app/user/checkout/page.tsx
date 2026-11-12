@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import { motion } from "motion/react"
-import { Bike, Car, MapPin, Navigation, Truck } from 'lucide-react'
+import { Bike, Car, IndianRupee, MapPin, Navigation, Truck } from 'lucide-react'
 import { MdElectricRickshaw } from "react-icons/md"
 import { FaTruckPickup } from "react-icons/fa6"
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -89,9 +89,7 @@ function page() {
                                     </div>
                                     <MapPin size={14} className='text-zinc-400 shrink-0 mt-1' />
                                 </div>
-                            </div> 
 
-                             <div className='bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden mb-8'>
                                 <div className='flex gap-4 px-5 py-4 border-b border-zinc-100'>
 
                                     <div className='flex flex-col items-center shrink-0 pt-0.5'>
@@ -100,16 +98,35 @@ function page() {
 
                                     <div className='flex-1 min-w-0'>
                                         <div className='text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400 mb-0.5'>Drop</div>
-                                        <div className='text-sm font-semibold tex-zinc-900 leading-snug truncate'>{drop}</div>
+                                        <div className='text-sm font-semibold text-zinc-900 leading-snug truncate'>{drop}</div>
                                     </div>
                                     <Navigation size={14} className='text-zinc-400 shrink-0 mt-1' />
                                 </div>
+                            </div> 
+
+                            <div className='flex items-end justify-between pt-6 border-t border-zinc-100'>
+                                <div>
+                                    <p className='text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400 mb-1'>Total Fare</p>
+                                    <p className='text-zinc-400 text-xs font-medium'>Includes base + distance charges</p>
+                                </div>
+
+                                <motion.div
+                                initial = {{ scale : 0.8, opacity : 0}}
+                                animate = {{ scale : 1, opacity : 1}}
+                                transition={{delay : 0.3, type:"spring", stiffness : 200}}
+                                className='flex items-baseline gap-1'
+                                > 
+                                <span className='text-zinc-400 text-lg font-black'> <IndianRupee /> </span>
+                                <span className='text-zinc-900 text-5xl font-black tracking-tight leading-none'>{fare}</span>
+
+                                </motion.div>
+
                             </div>
+
                         </div>
                     </motion.div>
                 </div>
             </div>
-
         </div>
     )
 }
