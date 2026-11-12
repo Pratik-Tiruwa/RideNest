@@ -1,10 +1,11 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from "motion/react"
 import { ArrowLeft, Bike, Car, CheckCircle, ChevronRight, LocateFixed, MapPin, Navigation, Phone, Truck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { vehicleType } from '@/models/vehicle.model'
 import axios from 'axios'
+import { formatPlaceSuggestion, Place, reverseGeoCode, searchPlaces } from '@/lib/geocoding'
 
 const stepVariants = {
   hidden: { opacity: 0, y: 16 },
@@ -19,17 +20,6 @@ const VEHICLES = [
   { id: "truck", label: "Truck", Icon: Truck, desc: "Heavy transport" }
 ]
 
-type Place = {
-  id: string
-  name: string
-  city?: string
-  state?: string
-  country?: string
-  countrycode?: string
-  lat: number
-  lon: number
-};
-
 function page() {
   const router = useRouter()
   const [vehicle, setVehicle] = useState<vehicleType>()
@@ -37,104 +27,127 @@ function page() {
   const [pickUp, setPickUp] = useState("")
   const [drop, setDrop] = useState("")
   const [pickUpCountry, setPickUpCountry] = useState("")
-  const [pickUpLat, setPickUpLat] = useState<Number>()
-  const [pickUpLon, setPickUpLon] = useState<Number>()
+  const [pickUpCountryCode, setPickUpCountryCode] = useState("")
+  const [pickUpLat, setPickUpLat] = useState<number>()
+  const [pickUpLon, setPickUpLon] = useState<number>()
   const [dropCountry, setDropCountry] = useState("")
-  const [dropLat, setDropLat] = useState<Number>()
-  const [dropLon, setDropLon] = useState<Number>()
+  const [dropLat, setDropLat] = useState<number>()
+  const [dropLon, setDropLon] = useState<number>()
   const [locating, setLocating] = useState(false)
+  const [locationError, setLocationError] = useState("")
   const [pickUpSuggestion, setPickUpSuggestion] = useState<Place[]>([])
   const [dropSuggestion, setDropSuggestion] = useState<Place[]>([])
+
+  const routeBoxRef = useRef<HTMLDivElement>(null)
+  const pickUpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const dropTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pickUpAbortRef = useRef<AbortController | null>(null)
+  const dropAbortRef = useRef<AbortController | null>(null)
+
+  const hasPickupCoords = pickUpLat !== undefined && pickUpLon !== undefined
+  const hasDropCoords = dropLat !== undefined && dropLon !== undefined
+
   const stepsCompleted = [
     Boolean(vehicle),
     mobile.length == 10,
-    Boolean(pickUp),
-    Boolean(drop)
+    Boolean(pickUp) && hasPickupCoords,
+    Boolean(drop) && hasDropCoords
   ]
-  const canContinue = !!(vehicle && mobile && pickUp && drop && pickUpLat && pickUpLon && dropLat && dropLon)
+  const canContinue = Boolean(vehicle && mobile && pickUp && drop && hasPickupCoords && hasDropCoords)
 
-  // console.log(progress)
-
-  const searchAddress = async (q: string, setResults: (r: Place[]) => void, restrict?: string) => {
-    try {
-      if (!q || q.trim().length < 3) {
-        setResults([])
-        return;
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (routeBoxRef.current && !routeBoxRef.current.contains(event.target as Node)) {
+        setPickUpSuggestion([])
+        setDropSuggestion([])
       }
-      const { data } = await axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(q.trim())}&limit=8&lang=en`)
-      let results: Place[] = (data.features ?? []).map((f: any) => ({
-        id: String(f.properties.osm_id),
-        name: f.properties.name,
-        city: f.properties.city,
-        state: f.properties.state,
-        country: f.properties.country,
-        countrycode: f.properties.countrycode,
-        lat: f.geometry.coordinates[1],
-        lon: f.geometry.coordinates[0]
-      }))
-      if (restrict) {
-        results = results.filter(r => r.country == restrict)
-      }
-      setResults(results)
-    } catch (error) {
-      console.log(error)
-      setResults([])
     }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      if (pickUpTimerRef.current) clearTimeout(pickUpTimerRef.current)
+      if (dropTimerRef.current) clearTimeout(dropTimerRef.current)
+      pickUpAbortRef.current?.abort()
+      dropAbortRef.current?.abort()
+    }
+  }, [])
+
+  const scheduleAddressSearch = (
+    query: string,
+    timerRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>,
+    abortRef: React.MutableRefObject<AbortController | null>,
+    setResults: (r: Place[]) => void,
+    options?: { biasLat?: number; biasLon?: number; countryCode?: string }
+  ) => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    abortRef.current?.abort()
+
+    if (!query || query.trim().length < 3) {
+      setResults([])
+      return
+    }
+
+    timerRef.current = setTimeout(async () => {
+      const controller = new AbortController()
+      abortRef.current = controller
+      try {
+        const results = await searchPlaces(query, {
+          ...options,
+          signal: controller.signal,
+        })
+        setResults(results)
+      } catch (error) {
+        if (!axios.isCancel(error)) {
+          console.log(error)
+          setResults([])
+        }
+      }
+    }, 300)
   }
 
-  const suggestion = (p: Place) => [p.name, p.city, p.state, p.country].filter(Boolean).join(", ")
-
-  // useEffect(() => { 
-  //   const timer = setTimeout(() => { 
-  //     if(pickUp && pickUp.trim().length >=3) { 
-  //       searchAddress(pickUp)
-  //     }
-  //   }, 400)
-  //   return() => clearTimeout(timer)
-  // }, [pickUp])
-
-
   const useCurrentLocation = () => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser.")
+      return
+    }
 
+    setLocationError("")
     setLocating(true)
-    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
-      // console.log(coords)
-      try {
-        const { data } = await axios.get(`https://photon.komoot.io/reverse?lon=${coords.longitude}&lat=${coords.latitude}`)
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const geo = await reverseGeoCode(coords.latitude, coords.longitude)
+          const fallbackLabel = `${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`
 
-        if (data.features.length) {
-          const p = data.features[0].properties
-
-          const locality = p.locality || p.suburb || ""
-
-          const city = p.city || (p.county ? p.county.replace("District", "") : "") || p.district || ""
-
-          const street = p.street && p.street !== p.name ? p.street : ""
-
-          const addressParts = [
-            p.name,
-            street,
-            locality,
-            city,
-            p.state,
-            p.postcode,
-            p.country
-          ]
-
-          const address = Array.from(new Set(addressParts.filter(Boolean))).join(", ")
-          setPickUp(address)
-          setPickUpCountry(p.country)
+          setPickUp(geo?.address || fallbackLabel)
+          setPickUpCountry(geo?.country || "")
+          setPickUpCountryCode(geo?.countryCode || "")
           setPickUpLat(coords.latitude)
           setPickUpLon(coords.longitude)
           setPickUpSuggestion([])
+        } catch (error) {
+          console.log(error)
+          setLocationError("Could not resolve address, please select from suggestions.")
+        } finally {
           setLocating(false)
         }
-      } catch (error) {
-        console.log(error)
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setLocationError("Location permission denied. Please allow location access or type your pickup.")
+        } else if (err.code === err.TIMEOUT) {
+          setLocationError("Location request timed out. Please try again.")
+        } else {
+          setLocationError("Unable to fetch current location. Please type your pickup.")
+        }
         setLocating(false)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 30000,
       }
-    })
+    )
   }
 
   return (
@@ -311,7 +324,7 @@ function page() {
                 <p className='text-xs font-bold uppercase text-zinc-500 tracking-widest'>Route</p>
               </div>
 
-              <div className='bg-zinc-50 border border-zinc-400 rounded-2xl overflow-visible'>
+              <div ref={routeBoxRef} className='bg-zinc-50 border border-zinc-400 rounded-2xl overflow-visible'>
 
                 <div className='relative z-30'>
                   <div className='flex items-center gap-3 px-4 py-3.5 focus-within:bg-white rounded-t-2xl transition-colors'>
@@ -323,8 +336,14 @@ function page() {
 
                     <input
                       onChange={(e) => {
-                        setPickUp(e.target.value)
-                        searchAddress(e.target.value, setPickUpSuggestion)
+                        const val = e.target.value
+                        setPickUp(val)
+                        setPickUpLat(undefined)
+                        setPickUpLon(undefined)
+                        setPickUpCountry("")
+                        setPickUpCountryCode("")
+                        setLocationError("")
+                        scheduleAddressSearch(val, pickUpTimerRef, pickUpAbortRef, setPickUpSuggestion)
                       }}
                       value={pickUp}
                       placeholder='Pickup location'
@@ -332,9 +351,11 @@ function page() {
                     />
 
                     <motion.button
+                      type="button"
                       whileTap={{ scale: 0.88 }}
                       onClick={useCurrentLocation}
                       disabled={locating}
+                      title='Use current location'
                       className='w-8 h-8 rounded-xl bg-zinc-200 hover:bg-zinc-300 transition-colors flex items-center justify-center shrink-0'
                     >
                       <LocateFixed size={14} className={`text-zinc-700 ${locating ? "animate-spin" : ""}`} />
@@ -349,25 +370,27 @@ function page() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -4, scale: 0.98 }}
                         transition={{ duration: 0.2 }}
-                        className='absolute left-0 right-0 top-full mt-1 bg-white border border-zinc-200 rounded-2xl shadow-xl max-h-28 overflow-y-auto z-50'
+                        className='absolute left-0 right-0 top-full mt-1 bg-white border border-zinc-200 rounded-2xl shadow-xl max-h-56 overflow-y-auto z-50'
                       >
                         {pickUpSuggestion.map((p, i) => (
                           <motion.div
-                            key={i}
+                            key={p.id || i}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            transition={{ delay: 1 * 0.03 }}
+                            transition={{ delay: i * 0.03 }}
                             onClick={() => {
-                              setPickUp(suggestion(p))
+                              setPickUp(formatPlaceSuggestion(p))
                               setPickUpCountry(p.country ?? "")
+                              setPickUpCountryCode(p.countrycode ?? "")
                               setPickUpLat(p.lat)
                               setPickUpLon(p.lon)
                               setPickUpSuggestion([])
+                              setLocationError("")
                             }}
-                            className='flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0'
+                            className='flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0 cursor-pointer'
                           >
                             <MapPin size={13} className='text-zinc-400 shrink-0' />
-                            <span className='text-sm text-zinc-800 font-medium truncate'>{suggestion(p)}</span>
+                            <span className='text-sm text-zinc-800 font-medium truncate'>{formatPlaceSuggestion(p)}</span>
                             <ChevronRight size={13} className='text-zinc-300 shrink-0 ml-auto' />
                           </motion.div>
                         ))}
@@ -379,7 +402,7 @@ function page() {
                 <div className='h-px bg-zinc-200' />
 
                 <div className='relative z-10'>
-                  <div className='flex items-center gap-3 px-4 py-3.5 focus-within:bg-white rounded-t-2xl transition-colors'>
+                  <div className='flex items-center gap-3 px-4 py-3.5 focus-within:bg-white rounded-b-2xl transition-colors'>
 
                     <div className='flex flex-col items-center shrink-0'>
                       <div className='w-3 h-3 rounded-full bg-zinc-900 border-2 border-white shadow ' />
@@ -387,13 +410,21 @@ function page() {
 
                     <input
                       onChange={(e) => {
-                        setDrop(e.target.value)
-                        searchAddress(e.target.value, setDropSuggestion, pickUpCountry)
+                        const val = e.target.value
+                        setDrop(val)
+                        setDropLat(undefined)
+                        setDropLon(undefined)
+                        setDropCountry("")
+                        scheduleAddressSearch(val, dropTimerRef, dropAbortRef, setDropSuggestion, {
+                          biasLat: pickUpLat,
+                          biasLon: pickUpLon,
+                          countryCode: pickUpCountryCode || undefined,
+                        })
                       }}
-                      disabled={!pickUpCountry}
+                      disabled={!hasPickupCoords}
                       value={drop}
-                      placeholder={pickUpCountry ? "Drop Location" : "Select Pick up Location First"}
-                      className='flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none'
+                      placeholder={hasPickupCoords ? "Drop Location" : "Select Pick up Location First"}
+                      className='flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none disabled:cursor-not-allowed'
                     />
 
                     <Navigation size={14} className='text-zinc-300 shrink-0' />
@@ -407,25 +438,25 @@ function page() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -4, scale: 0.98 }}
                         transition={{ duration: 0.2 }}
-                        className='absolute left-0 right-0 top-full mt-1 bg-white border border-zinc-200 rounded-2xl shadow-xl max-h-28 overflow-y-auto z-50'
+                        className='absolute left-0 right-0 top-full mt-1 bg-white border border-zinc-200 rounded-2xl shadow-xl max-h-56 overflow-y-auto z-50'
                       >
                         {dropSuggestion.map((p, i) => (
                           <motion.div
-                            key={i}
+                            key={p.id || i}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            transition={{ delay: 1 * 0.03 }}
+                            transition={{ delay: i * 0.03 }}
                             onClick={() => {
-                              setDrop(suggestion(p))
+                              setDrop(formatPlaceSuggestion(p))
                               setDropCountry(p.country ?? "")
                               setDropLat(p.lat)
                               setDropLon(p.lon)
                               setDropSuggestion([])
                             }}
-                            className='flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0'
+                            className='flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0 cursor-pointer'
                           >
                             <Navigation size={13} className='text-zinc-400 shrink-0' />
-                            <span className='text-sm text-zinc-800 font-medium truncate'>{suggestion(p)}</span>
+                            <span className='text-sm text-zinc-800 font-medium truncate'>{formatPlaceSuggestion(p)}</span>
                             <ChevronRight size={13} className='text-zinc-300 shrink-0 ml-auto' />
                           </motion.div>
                         ))}
@@ -435,6 +466,10 @@ function page() {
                 </div>
 
               </div>
+
+              {locationError && (
+                <p className='text-red-500 text-xs font-medium mt-2 ml-1'>{locationError}</p>
+              )}
 
             </motion.div>
 

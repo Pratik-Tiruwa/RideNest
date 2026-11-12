@@ -3,9 +3,9 @@ import React, { useEffect, useRef, useState } from 'react'
 import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
 import L from "leaflet"
 import axios from 'axios'
-import { AnimatePresence } from 'motion/react'
-import { motion } from "motion/react"
+import { AnimatePresence, motion } from 'motion/react'
 import { MapPin, Navigation2 } from 'lucide-react'
+import { haversineKm, reverseGeoCode, searchPlaces } from '@/lib/geocoding'
 
 type Props = {
   pickUp: string
@@ -13,6 +13,7 @@ type Props = {
   pickUpCoords?: [number, number]
   dropCoords?: [number, number]
   onChange: (p: string, d: string) => void
+  onCoordsChange?: (pickup?: [number, number], drop?: [number, number]) => void
   onDistance: (d: number) => void
 }
 
@@ -77,12 +78,12 @@ const dropIcon = new L.DivIcon({
   iconAnchor: [45, 58]
 })
 
-function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance, onChange }: Props) {
+function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance, onChange, onCoordsChange }: Props) {
 
   const [p1, setP1] = useState<[number, number] | undefined>(pickUpCoords)
   const [p2, setP2] = useState<[number, number] | undefined>(dropCoords)
   const [route, setRoute] = useState<[number, number][]>([])
-  const [km, setKm] = useState<number | null>(0)
+  const [km, setKm] = useState<number | null>(null)
   const [ready, setReady] = useState(false)
   const initialLoaded = useRef(false)
 
@@ -97,64 +98,38 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance, onChang
 
   const geoCoding = async (q: string): Promise<[number, number] | null> => {
     try {
-      const { data } = await axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1`)
-      if (!data.features.length) return null
-      const [lon, lat] = data.features[0].geometry.coordinates
-      return [lat, lon]
+      const results = await searchPlaces(q)
+      if (!results.length) return null
+      return [results[0].lat, results[0].lon]
     } catch (error) {
       console.log(error)
       return null
     }
   }
 
-  const reverseGeoCoding = async (lat: number, lon: number): Promise<string | null> => {
-    try {
-      const { data } = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`, {
-        timeout: 3500
-      })
-
-      if (data?.address) {
-        const addr = data.address
-        const parts = [
-          addr.road || addr.pedestrian || addr.suburb,
-          addr.neighbourhood || addr.suburb,
-          addr.city || addr.town || addr.village || addr.county,
-          addr.state
-        ].filter(Boolean)
-        return Array.from(new Set(parts)).join(", ") || data.display_name
-      }
-    } catch {
-      // Fallback: BigDataCloud free client geocoding API
-      try {
-        const { data } = await axios.get(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`,
-          { timeout: 3000 }
-        )
-        const parts = [data.locality, data.city, data.principalSubdivision].filter(Boolean)
-        return Array.from(new Set(parts)).join(", ") || null
-      } catch (err) {
-        console.warn("Reverse geocoding error : ", err)
-      }
-    }
-    return null
-  }
-
-
   const loadRoute = async (p: [number, number], d: [number, number]) => {
     try {
-      const { data } = await axios.get(`https://router.project-osrm.org/route/v1/driving/${p[1]},${p[0]};${d[1]},${d[0]}?overview=full&geometries=geojson`)
+      const { data } = await axios.get(
+        `https://router.project-osrm.org/route/v1/driving/${p[1]},${p[0]};${d[1]},${d[0]}?overview=full&geometries=geojson`,
+        { timeout: 6000 }
+      )
 
-      if (!data.routes || !data.routes.length) return
-      setRoute(data.routes[0].geometry.coordinates.map(([lon, lat]: number[]) => [lat, lon]))
-      const distKm = +((data.routes[0].distance) / 1000).toFixed(2)
-      setKm(distKm)
-
-      if (onDistance) {
-        onDistance(distKm)
+      if (data?.routes?.length) {
+        setRoute(data.routes[0].geometry.coordinates.map(([lon, lat]: number[]) => [lat, lon]))
+        const distKm = +((data.routes[0].distance) / 1000).toFixed(2)
+        setKm(distKm)
+        onDistance?.(distKm)
+        return
       }
     } catch (error) {
       console.log(error)
     }
+
+    // Fallback to straight-line route & haversine distance if OSRM fails
+    const fallbackKm = haversineKm(p, d)
+    setRoute([p, d])
+    setKm(fallbackKm)
+    onDistance?.(fallbackKm)
   }
 
   const dragPickUp = async (lat: number, lon: number) => {
@@ -162,13 +137,14 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance, onChang
     setP1(newP1)
 
     const destination = p2 ?? dropCoords
+    onCoordsChange?.(newP1, destination)
     if (destination) {
       loadRoute(newP1, destination)
     }
 
-    const addr = await reverseGeoCoding(lat, lon)
-    if (addr) {
-      onChange?.(addr, drop)
+    const geo = await reverseGeoCode(lat, lon)
+    if (geo?.address) {
+      onChange?.(geo.address, drop)
     }
   }
 
@@ -177,39 +153,47 @@ function SearchMap({ pickUp, drop, pickUpCoords, dropCoords, onDistance, onChang
     setP2(newP2)
 
     const pickup = p1 ?? pickUpCoords
+    onCoordsChange?.(pickup, newP2)
     if (pickup) {
       loadRoute(pickup, newP2)
     }
 
-    const addr = await reverseGeoCoding(lat, lon)
-    if (addr) {
-      onChange?.(pickUp, addr)
+    const geo = await reverseGeoCode(lat, lon)
+    if (geo?.address) {
+      onChange?.(pickUp, geo.address)
     }
   }
 
+  // Initial route load (from provided coordinates or address geocoding)
   useEffect(() => {
-    setReady(true)
-    if (pickUp && drop && (!pickUpCoords || !dropCoords)) {
-      (async () => {
-        const a = await geoCoding(pickUp)
-        const b = await geoCoding(drop)
+    if (initialLoaded.current) return
 
-        if (!a || !b) return
-        setP1(a)
-        setP2(b)
-        await loadRoute(a, b)
-        setReady(false)
-      })()
-    }
-  }, [pickUp, drop, pickUpCoords, dropCoords])
-
-  // Initial route load only once on mount
-  useEffect(() => {
-    if (!initialLoaded.current && pickUpCoords && dropCoords) {
+    if (pickUpCoords && dropCoords) {
       initialLoaded.current = true
-      loadRoute(pickUpCoords, dropCoords)
+      loadRoute(pickUpCoords, dropCoords).finally(() => setReady(true))
+      return
     }
-  }, [pickUpCoords, dropCoords])
+
+    if (pickUp && drop) {
+      initialLoaded.current = true
+      ;(async () => {
+        try {
+          const [a, b] = await Promise.all([geoCoding(pickUp), geoCoding(drop)])
+          if (a && b) {
+            setP1(a)
+            setP2(b)
+            onCoordsChange?.(a, b)
+            await loadRoute(a, b)
+          }
+        } finally {
+          setReady(true)
+        }
+      })()
+      return
+    }
+
+    setReady(true)
+  }, [pickUp, drop, pickUpCoords, dropCoords])
 
   const currentPickup = p1 ?? pickUpCoords
   const currentDrop = p2 ?? dropCoords

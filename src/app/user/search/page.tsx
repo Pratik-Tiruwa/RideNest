@@ -19,7 +19,13 @@ const VEHICLE_META: any = {
   auto: { label: "Auto", Icon: MdElectricRickshaw },
   car: { label: "Car", Icon: Car },
   loading: { label: "Loading", Icon: FaTruckPickup },
-  truck: { labeel: "Truck", Icon: Truck }
+  truck: { label: "Truck", Icon: Truck }
+}
+
+const parseCoord = (value: string | null) => {
+  if (!value) return undefined
+  const num = Number(value)
+  return Number.isFinite(num) ? num : undefined
 }
 
 interface IVehicle {  
@@ -49,10 +55,10 @@ function page() {
   const [drop, setDrop] = useState(params.get("drop") || "")
   const [km, setKm] = useState<number>(0)
   const mobile = params.get("mobile")
-  const pickUpLat = Number(params.get("pickuplat"))
-  const pickUpLon = Number(params.get("pickuplon"))
-  const dropLat = Number(params.get("droplat"))
-  const dropLon = Number(params.get("droplon"))
+  const [pickUpLat, setPickUpLat] = useState<number | undefined>(() => parseCoord(params.get("pickuplat")))
+  const [pickUpLon, setPickUpLon] = useState<number | undefined>(() => parseCoord(params.get("pickuplon")))
+  const [dropLat, setDropLat] = useState<number | undefined>(() => parseCoord(params.get("droplat")))
+  const [dropLon, setDropLon] = useState<number | undefined>(() => parseCoord(params.get("droplon")))
   const vehicle = params.get("vehicle") || ""
   const [vehicles, setVehicles] = useState<IVehicle[]>([])
   const [loading, setLoading] = useState(false)
@@ -61,11 +67,11 @@ function page() {
   const meta = VEHICLE_META[vehicle]
 
   const pickUpCoords = useMemo<[number, number] | undefined>(() => {
-    return pickUpLat && pickUpLon ? [pickUpLat, pickUpLon] : undefined
+    return pickUpLat !== undefined && pickUpLon !== undefined ? [pickUpLat, pickUpLon] : undefined
   }, [pickUpLat, pickUpLon])
 
   const dropCoords = useMemo<[number, number] | undefined>(() => {
-    return dropLat && dropLon ? [dropLat, dropLon] : undefined
+    return dropLat !== undefined && dropLon !== undefined ? [dropLat, dropLon] : undefined
   }, [dropLat, dropLon])
 
   const getNearByVehicles = async (latitude: number, longitude: number, vehicleType: string | null) => {
@@ -75,18 +81,18 @@ function page() {
         latitude, longitude, vehicleType
       })
       setVehicles(data)
-      setLoading(false)
     } catch (error) {
       console.log(error)
+    } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    if (pickUpLat && pickUpLon) {
+    if (pickUpLat !== undefined && pickUpLon !== undefined) {
       getNearByVehicles(pickUpLat, pickUpLon, vehicle)
     }
-  }, [pickUpLat, pickUpLon, pickUp])
+  }, [pickUpLat, pickUpLon, vehicle])
 
   return (
     <div className='min-h-screen bg-zinc-100 text-zinc-900 overflow-hidden'>
@@ -110,6 +116,16 @@ function page() {
           pickUpCoords={pickUpCoords}
           dropCoords={dropCoords}
           onChange={(p, d) => { setPickUp(p); setDrop(d) }}
+          onCoordsChange={(p, d) => {
+            if (p) {
+              setPickUpLat(p[0])
+              setPickUpLon(p[1])
+            }
+            if (d) {
+              setDropLat(d[0])
+              setDropLon(d[1])
+            }
+          }}
           onDistance={setKm}
         />
       </div>
@@ -118,7 +134,7 @@ function page() {
         initial={{ y: 60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 160, damping: 22 }}
-        className='relative z-20 -mt-10 bg-white rounded-t-[28px] border-t border-zinc-200 shaodw-[0_-8px_40px_rgba(0,0,0,0.08)] pt-5 pb-20 min-h-[52vh]'
+        className='relative z-20 -mt-10 bg-white rounded-t-[28px] border-t border-zinc-200 shadow-[0_-8px_40px_rgba(0,0,0,0.08)] pt-5 pb-20 min-h-[52vh]'
       >
 
         <div className='px-5 lg:px-8 max-w-6xl mx-auto'>
@@ -169,11 +185,11 @@ function page() {
 
             <div>
               <h2 className='text-zinc-900 text-lg font-black tracking-tight'>
-                {loading ? "Finding Vehicles" : vehicles.length > 0 ? "Available" : "No nearby Vehciles"}
+                {loading ? "Finding Vehicles" : vehicles.length > 0 ? "Available" : "No nearby Vehicles"}
               </h2>
 
               {
-                meta && <div className='text-zinc-400 text0xs mt-0.5'>
+                meta && <div className='text-zinc-400 text-xs mt-0.5'>
                   {meta.label} rides near your pickup
                 </div>
               }
@@ -188,7 +204,7 @@ function page() {
                   exit={{ opacity: 0, scale: 0.85 }}
                   className='flex items-center gap-2 bg-zinc-100 border border-zinc-200 px-3 py-1.5 rounded-full'
                 >
-                  <div className='w-3.5 h-3.5 rounded-full border-2 border-zinc-3-- border-t-zinc-700 animate-spin' />
+                  <div className='w-3.5 h-3.5 rounded-full border-2 border-zinc-300 border-t-zinc-700 animate-spin' />
                   <span className='text-zinc-500 text-xs font-semibold'>Searching...</span>
 
                 </motion.div>
@@ -221,11 +237,15 @@ function page() {
                   <Search size={26} className='text-zinc-400' />
                 </div>
                 <p className='text-zinc-900 font-bold text-base mb-1'>Vehicles not Found</p>
-                <p className='text-zinc-400 text-sm max-w-xs leading-relaxed'>{meta.label || "Vehcile"} drivers are available near your pickup right now.</p>
+                <p className='text-zinc-400 text-sm max-w-xs leading-relaxed'>No {meta?.label || "Vehicle"} drivers are available near your pickup right now.</p>
 
                 <motion.button
                 whileTap={{scale : 0.95}}
-                onClick={()=>getNearByVehicles(pickUpLat, pickUpLon, vehicle)}
+                onClick={() => {
+                  if (pickUpLat !== undefined && pickUpLon !== undefined) {
+                    getNearByVehicles(pickUpLat, pickUpLon, vehicle)
+                  }
+                }}
                 className='mt-5 flex items-center gap-2 bg-zinc-900 text-white text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-zinc-800 transition-colors'
                 >
                   <RefreshCcw size={14}/> Retry Search
@@ -254,12 +274,12 @@ function page() {
                     drop, 
                     vehicle:v.type, 
                     driverId:v.owner,
-                    fare:String(v.baseFare! + (v.pricePerKM!*km)), 
-                    pickUpLat:String(pickUpLat),
-                    pickUpLon:String(pickUpLon),
-                    dropLat:String(dropLat), 
-                    dropLon:String(dropLon), 
-                    mobile:String(mobile)
+                    fare:String(Math.round((v.baseFare ?? 0) + (v.pricePerKM ?? 0) * km)), 
+                    pickUpLat:String(pickUpLat ?? ""),
+                    pickUpLon:String(pickUpLon ?? ""),
+                    dropLat:String(dropLat ?? ""), 
+                    dropLon:String(dropLon ?? ""), 
+                    mobile:String(mobile ?? "")
                   })
                   router.push(`/user/checkout?${url.toString()}`)
                 }
