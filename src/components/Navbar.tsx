@@ -55,22 +55,31 @@ function Navbar() {
           </Link>
           <div className='hidden md:flex items-center gap-10'>
 
-            {Nav_items.map((i, index) => {
-              let href;
-              if (i == "Home") {
-                href = "/"
-              } else {
-                href = `/${i.toLowerCase()}`
-              }
-              const active = href === pathName
-              return <Link key={index} href={href} className={`
+            {userData?.role == "partner" ? (
+              <>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/partner/pending-request"}>Pending Requests</Link>
+                <Link href={"/partner/bookings"}>Bookings</Link>
+                <Link href={"/partner/active-ride"}>Active Ride</Link>
+              </>
+            ) :
+              Nav_items.map((i, index) => {
+                let href;
+                if (i == "Home") {
+                  href = "/"
+                } else {
+                  href = `/${i.toLowerCase()}`
+                }
+                const active = href === pathName
+                return <Link key={index} href={href} className={`
             text-sm font-medium pl-2 transition 
             ${active
-                  ? "text-white"
-                  : "text-gray-400 hover:text-white"
-                }
+                    ? "text-white"
+                    : "text-gray-400 hover:text-white"
+                  }
             `}>{i}</Link>
-            })}
+              })
+            }
 
           </div>
 
