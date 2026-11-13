@@ -5,6 +5,7 @@ import { ArrowRight, Bike, Car, Clock, CreditCard, IndianRupee, MapPin, Navigati
 import { MdElectricRickshaw } from "react-icons/md"
 import { FaTruckPickup } from "react-icons/fa6"
 import { useSearchParams, useRouter } from 'next/navigation'
+import axios from 'axios'
 
 const VEHICLE_META: any = {
     bike: { label: "Bike", Icon: Bike },
@@ -25,15 +26,42 @@ function page() {
     const [pickUp, setPickUp] = useState(params.get("pickUp") || "")
     const [drop, setDrop] = useState(params.get("drop") || "")
     const mobile = params.get("mobile")
-    const pickUpLat = Number(params.get("pickUplat"))
-    const pickUpLon = Number(params.get("pickUplon"))
+    const pickUpLat = Number(params.get("pickUpLat"))
+    const pickUpLon = Number(params.get("pickUpLon"))
     const dropLat = Number(params.get("dropLat"))
     const dropLon = Number(params.get("dropLon"))
     const vehicle = params.get("vehicle") || ""
+    const driverId = params.get("driverId") || ""
+    const vehicleId = params.get("vehicleId") || ""
     const fare = params.get("fare") || ""
     const [status, setStatus] = useState<Status>("idle")
 
     const { Icon, label } = VEHICLE_META[vehicle]
+
+    const handleRequestBooking = async () => {
+        try {
+            const { data } = await axios.post("/api/booking/create", {
+                driverId,
+                vehicleId,
+                pickUpAddress: pickUp,
+                dropAddress: drop,
+                pickUpLocation: {
+                    type: "Point",
+                    coordinates: [pickUpLon, pickUpLat]
+                },
+                dropLocation: {
+                    type: "Point",
+                    coordinates: [dropLon, dropLat]
+                },
+                fare,
+                mobileNumber: mobile
+            })
+
+            console.log(data)
+        } catch (error: any) {
+            console.log(error?.reponse?.data?.message || error?.message)
+        }
+    }
 
     return (
         <div className='min-h-screen bg-zinc-100 px-4 py-12'>
@@ -158,20 +186,21 @@ function page() {
                                                         { icon: <Clock size={14} />, text: "Driver will respond within 2 minutes" },
                                                         { icon: <ShieldCheck size={14} />, text: "Verified & insured drivers only" },
                                                         { icon: <CreditCard size={14} />, text: "Pay after driver accepts" },
-                                                    ].map((item, i) => ( 
+                                                    ].map((item, i) => (
                                                         <div key={i} className='flex items-center gap-3'>
                                                             <div className='w-7 h-7 rounded-xl bg-zinc-200 flex items-center justify-center text-zinc-600 shrink-0'>{item.icon}</div>
-                                                            <p className='text-zinc-500 text-xs font-medium'>{item.text}</p> 
+                                                            <p className='text-zinc-500 text-xs font-medium'>{item.text}</p>
                                                         </div>
                                                     ))
                                                 }
                                             </div>
-                                        </div>  
+                                        </div>
 
-                                        <motion.button 
-                                        whileTap={{scale : 0.97}}
-                                        whileHover={{scale : 1.02}}
-                                        className='w-full mt-8 h-14 bg-zinc-900 hover:bg-black disabled:opacity-40 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2.5 transition-colors shadow-md'
+                                        <motion.button
+                                            whileTap={{ scale: 0.97 }}
+                                            whileHover={{ scale: 1.02 }}
+                                            onClick={handleRequestBooking}
+                                            className='w-full mt-8 h-14 bg-zinc-900 hover:bg-black disabled:opacity-40 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2.5 transition-colors shadow-md'
                                         >
                                             <span>Request Ride </span> <ArrowRight size={15} />
                                         </motion.button>

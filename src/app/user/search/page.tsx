@@ -5,7 +5,7 @@ import { ArrowLeft, Bike, Car, MapPin, Navigation, RefreshCcw, Search, Truck, Za
 import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import axios from 'axios'
-import {vehicleType } from '@/models/vehicle.model'
+import { vehicleType } from '@/models/vehicle.model'
 import { MdElectricRickshaw } from "react-icons/md"
 import { FaTruckPickup } from "react-icons/fa6"
 import VehicleCard from '@/components/VehicleCard'
@@ -28,21 +28,22 @@ const parseCoord = (value: string | null) => {
   return Number.isFinite(num) ? num : undefined
 }
 
-interface IVehicle {  
-    owner: string,
-    type : vehicleType, 
-    vehicleModel : string, 
-    number : string,
-    color? : string, 
-    imageUrl? : string, 
-    baseFare? : number, 
-    pricePerKM? : number, 
-    waitingCharge? : number, 
-    status: "approved" | "pending" | "rejected", 
-    rejectionReason?: string, 
-    isActive : boolean, 
-    createdAt : Date, 
-    updatedAt : Date
+interface IVehicle {
+  _id: string,
+  owner: string,
+  type: vehicleType,
+  vehicleModel: string,
+  number: string,
+  color?: string,
+  imageUrl?: string,
+  baseFare?: number,
+  pricePerKM?: number,
+  waitingCharge?: number,
+  status: "approved" | "pending" | "rejected",
+  rejectionReason?: string,
+  isActive: boolean,
+  createdAt: Date,
+  updatedAt: Date
 }
 
 
@@ -240,15 +241,15 @@ function page() {
                 <p className='text-zinc-400 text-sm max-w-xs leading-relaxed'>No {meta?.label || "Vehicle"} drivers are available near your pickup right now.</p>
 
                 <motion.button
-                whileTap={{scale : 0.95}}
-                onClick={() => {
-                  if (pickUpLat !== undefined && pickUpLon !== undefined) {
-                    getNearByVehicles(pickUpLat, pickUpLon, vehicle)
-                  }
-                }}
-                className='mt-5 flex items-center gap-2 bg-zinc-900 text-white text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-zinc-800 transition-colors'
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    if (pickUpLat !== undefined && pickUpLon !== undefined) {
+                      getNearByVehicles(pickUpLat, pickUpLon, vehicle)
+                    }
+                  }}
+                  className='mt-5 flex items-center gap-2 bg-zinc-900 text-white text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-zinc-800 transition-colors'
                 >
-                  <RefreshCcw size={14}/> Retry Search
+                  <RefreshCcw size={14} /> Retry Search
                 </motion.button>
 
               </motion.div>
@@ -258,33 +259,34 @@ function page() {
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
             {vehicles.map((v, i) => (
               <motion.div
-              key={i}
-              initial = {{ opacity : 0, y : 24}}
-              animate = {{ opacity : 1, y : 0}}
-              transition={{ delay : i * 0.06, duration : 0.38, ease : [0.22, 1, 0.36, 1]}}
-              >  
+                key={i}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06, duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+              >
 
-              <VehicleCard 
-              vehicle = {v} 
-              distance = {km}
-              onBook = { 
-                () => { 
-                  const url = new URLSearchParams({
-                    pickUp,
-                    drop, 
-                    vehicle:v.type, 
-                    driverId:v.owner,
-                    fare:String(Math.round((v.baseFare ?? 0) + (v.pricePerKM ?? 0) * km)), 
-                    pickUpLat:String(pickUpLat ?? ""),
-                    pickUpLon:String(pickUpLon ?? ""),
-                    dropLat:String(dropLat ?? ""), 
-                    dropLon:String(dropLon ?? ""), 
-                    mobile:String(mobile ?? "")
-                  })
-                  router.push(`/user/checkout?${url.toString()}`)
-                }
-              }
-              />
+                <VehicleCard
+                  vehicle={v}
+                  distance={km}
+                  onBook={
+                    () => {
+                      const url = new URLSearchParams({
+                        pickUp,
+                        drop,
+                        vehicle: v.type,
+                        driverId: v.owner,
+                        vehicleId:String(v._id),
+                        fare: String(Math.round((v.baseFare ?? 0) + (v.pricePerKM ?? 0) * km)),
+                        pickUpLat: String(pickUpLat ?? ""),
+                        pickUpLon: String(pickUpLon ?? ""),
+                        dropLat: String(dropLat ?? ""),
+                        dropLon: String(dropLon ?? ""),
+                        mobile: String(mobile ?? "")
+                      })
+                      router.push(`/user/checkout?${url.toString()}`)
+                    }
+                  }
+                />
 
               </motion.div>
             ))}
