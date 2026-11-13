@@ -15,7 +15,7 @@ type PaymentStatus = "pending"
     | "cash"
     | "failed";
 
-interface IBooking {
+export interface IBooking {
     user: mongoose.Types.ObjectId
     driver: mongoose.Types.ObjectId
     vehicle: mongoose.Types.ObjectId
