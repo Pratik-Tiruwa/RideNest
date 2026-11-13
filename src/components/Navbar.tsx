@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -11,6 +11,7 @@ import { RootState, AppDispatch } from '@/redux/store'
 import { Bike, Car, ChevronRight, LogOut, Menu, Truck, X } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { setUserData } from '@/redux/userSlice'
+import axios from 'axios'
 
 
 const Nav_items = ["Home", "Bookings", "About Us", "Contact"]
@@ -25,6 +26,7 @@ function Navbar() {
   const router = useRouter();
 
   const { userData } = useSelector((state: RootState) => state.user)
+  const [pendingCount, setPendingCount] = useState()
   const dispatch = useDispatch<AppDispatch>()
 
   const handleLogout = async () => {
@@ -32,6 +34,23 @@ function Navbar() {
     dispatch(setUserData(null))
     setProfileOpen(false)
   }
+
+  const fetchCount = async () => {
+    try {
+      const { data } = await axios.get("/api/partner/bookings/pending-requests-count")
+      console.log(data)
+      setPendingCount(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    if (userData?.role == "partner") {
+      fetchCount()
+    }
+  }, [userData?.role])
+
   return (
     <>
       <motion.div
@@ -59,7 +78,7 @@ function Navbar() {
               <>
                 <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/"}>Home</Link>
                 <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/partner/pending-request"}>Pending Requests
-                <span className='absolute -top-2 -right-5.5 w-6 h-6 bg-white text-black text-xs rounded-full flex items-center justify-center font-bold'>0</span>
+                  <span className='absolute -top-2 -right-5.5 w-6 h-6 bg-white text-black text-xs rounded-full flex items-center justify-center font-bold'>{pendingCount ?? 0}</span>
                 </Link>
                 <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/partner/bookings"}>Bookings</Link>
                 <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/partner/active-ride"}>Active Ride</Link>
