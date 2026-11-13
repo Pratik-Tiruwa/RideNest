@@ -77,7 +77,7 @@ function Navbar() {
             {userData?.role == "partner" ? (
               <>
                 <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/"}>Home</Link>
-                <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/partner/pending-request"}>Pending Requests
+                <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/partner/pending-requests"}>Pending Requests
                   <span className='absolute -top-2 -right-5.5 w-6 h-6 bg-white text-black text-xs rounded-full flex items-center justify-center font-bold'>{pendingCount ?? 0}</span>
                 </Link>
                 <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/partner/bookings"}>Bookings</Link>
