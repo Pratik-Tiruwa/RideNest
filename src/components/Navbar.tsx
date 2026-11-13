@@ -57,10 +57,12 @@ function Navbar() {
 
             {userData?.role == "partner" ? (
               <>
-                <Link href={"/"}>Home</Link>
-                <Link href={"/partner/pending-request"}>Pending Requests</Link>
-                <Link href={"/partner/bookings"}>Bookings</Link>
-                <Link href={"/partner/active-ride"}>Active Ride</Link>
+                <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/"}>Home</Link>
+                <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/partner/pending-request"}>Pending Requests
+                <span className='absolute -top-2 -right-5.5 w-6 h-6 bg-white text-black text-xs rounded-full flex items-center justify-center font-bold'>0</span>
+                </Link>
+                <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/partner/bookings"}>Bookings</Link>
+                <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/partner/active-ride"}>Active Ride</Link>
               </>
             ) :
               Nav_items.map((i, index) => {
@@ -104,7 +106,7 @@ function Navbar() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className='absolute top-14 right-0 w-[300px] bg-white text-black rounded-2xl shadow-xl border'
+                        className='absolute top-14 right-0 w-75 bg-white text-black rounded-2xl shadow-xl border'
                       >
 
                         <div className='p-5'>
@@ -188,7 +190,7 @@ function Navbar() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              className='fixed top-[85px] left-1/2 -translate-x-1/2 w-[92%] bg-[#0B0B0B] rounded-2xl shadow-2xl z-40 md:hidden overflow-hidden'
+              className='fixed top-21.25 left-1/2 -translate-x-1/2 w-[92%] bg-[#0B0B0B] rounded-2xl shadow-2xl z-40 md:hidden overflow-hidden'
             >
 
               <div className='flex flex-col divide-y divide-white/10'>
