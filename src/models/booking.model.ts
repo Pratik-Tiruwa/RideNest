@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
-type BookingStatus = "requested"
+type BookingStatus = "idle"
+    | "requested"
     | "awaiting_payment"
     | "confirmed"
     | "started"
@@ -82,76 +83,76 @@ const bookingSchema = new mongoose.Schema<IBooking>({
         required: true
     },
 
-    pickUpLocation : { 
-        type : { 
-            type : String, 
-            enum : ["Point"]
-        }, 
-        coordinates : [Number]
-    }, 
-
-    dropLocation : { 
-        type : { 
-            type : String, 
-            enum : ["Point"]
-        }, 
-        coordinates : [Number]
-    }, 
-
-    fare : { 
-        type : Number, 
-        required : true
-    }, 
-
-    userMobileNumber : { 
-        type : String, 
-        required:true
+    pickUpLocation: {
+        type: {
+            type: String,
+            enum: ["Point"]
+        },
+        coordinates: [Number]
     },
 
-    driverMobileNumber : { 
-        type : String, 
+    dropLocation: {
+        type: {
+            type: String,
+            enum: ["Point"]
+        },
+        coordinates: [Number]
+    },
+
+    fare: {
+        type: Number,
         required: true
-    }, 
+    },
 
-    bookingStatus : { 
+    userMobileNumber: {
         type: String,
-        enum : ["requested", "awaiting_payment","confirmed","started","completed","cancelled", "rejected", "expired"], 
-        default :  "requested"
-    }, 
+        required: true
+    },
 
-    paymentStatus : { 
-        type : String, 
-        enum : ["pending", "paid", "cash", "failed"],
-        default : "pending"
-    }, 
+    driverMobileNumber: {
+        type: String,
+        required: true
+    },
 
-    adminCommission : { 
-        type : Number,
-        default : 0
-    }, 
+    bookingStatus: {
+        type: String,
+        enum: ["idle", "requested", "awaiting_payment", "confirmed", "started", "completed", "cancelled", "rejected", "expired"],
+        default: "idle"
+    },
 
-    partnerAmount : { 
-        type : Number, 
+    paymentStatus: {
+        type: String,
+        enum: ["pending", "paid", "cash", "failed"],
+        default: "pending"
+    },
+
+    adminCommission: {
+        type: Number,
         default: 0
-    }, 
+    },
 
-    pickUpOtp : { 
-        type : String
-    }, 
+    partnerAmount: {
+        type: Number,
+        default: 0
+    },
 
-    dropOtp : { 
-        type : String
-    }, 
+    pickUpOtp: {
+        type: String
+    },
 
-    pickUpOtpExpires : { 
-        type : Date
-    }, 
+    dropOtp: {
+        type: String
+    },
 
-    dropOtpExpires : { 
-        type : Date
+    pickUpOtpExpires: {
+        type: Date
+    },
+
+    dropOtpExpires: {
+        type: Date
     }
 
-}, { timestamps: true }) 
+}, { timestamps: true })
 
 
 const Booking = mongoose.models.Booking || mongoose.model("Booking", bookingSchema)
