@@ -22,6 +22,12 @@ export async function GET(req: NextRequest) {
             bookingStatus: { $in: ["requested", "awaiting_payment", "confirmed", "started"] }
         })
 
+        if (!booking) {
+            return NextResponse.json(
+                { booking: "idle" }
+            )
+        }
+
         return NextResponse.json(
             { booking }
         )
