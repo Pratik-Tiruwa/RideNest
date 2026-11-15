@@ -36,6 +36,7 @@ function page() {
     const fare = params.get("fare") || ""
     const [status, setStatus] = useState<Status>("idle")
     const [loading, setLoading] = useState(false)
+    const [booking, setBooking] = useState<any>() 
 
     const { Icon, label } = VEHICLE_META[vehicle]
 
@@ -58,6 +59,7 @@ function page() {
                 fare,
                 mobileNumber: mobile
             })
+            setBooking(data)
             setLoading(false)
             setStatus("requested")
         } catch (error: any) {
@@ -69,12 +71,21 @@ function page() {
     const fetchActiveBooking = async() => { 
         try {
             const {data} = await axios.get("/api/booking/active")
-            console.log(data)
+            setBooking(data.booking)
             setStatus(data?.booking?.bookingStatus || data?.booking)
         } catch (error) {
             console.log(error)
         }
     } 
+
+    const handleCancelBooking = async() => { 
+        try {
+            const {data} = await axios.get(`/api/booking/${booking._id}/cancel`)
+            console.log(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     useEffect(() => { 
 fetchActiveBooking()
@@ -255,6 +266,7 @@ fetchActiveBooking()
 
                                     <motion.div
                                     whileTap={{scale:0.95}}
+                                    onClick={handleCancelBooking}
                                     className='flex items-center gap-2 text-xs font-bold text-zinc-400 hover:text-zinc-900 transition-colors border border-zinc-200 hover:border-zinc-400 px-4 py-2.5 rounded-xl'
                                     > 
 
