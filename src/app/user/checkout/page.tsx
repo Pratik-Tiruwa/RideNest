@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from "motion/react"
 import { ArrowRight, Bike, Car, Clock, CreditCard, IndianRupee, MapPin, Navigation, ShieldCheck, Truck } from 'lucide-react'
 import { MdElectricRickshaw } from "react-icons/md"
@@ -61,7 +61,20 @@ function page() {
         } catch (error: any) {
             console.log(error?.reponse?.data?.message || error?.message)
         }
-    }
+    } 
+
+    const fetchActiveBooking = async() => { 
+        try {
+            const {data} = await axios.get("/api/booking/active")
+            console.log(data)
+        } catch (error) {
+            console.log(error)
+        }
+    } 
+
+    useEffect(() => { 
+fetchActiveBooking()
+    },[])
 
     return (
         <div className='min-h-screen bg-zinc-100 px-4 py-12'>
