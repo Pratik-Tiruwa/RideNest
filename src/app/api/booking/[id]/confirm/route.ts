@@ -13,7 +13,7 @@ export async function GET(
         const booking = await Booking.findById(bookingId)
         if(!booking) { 
             return NextResponse.json(
-                {success:true, message: "booking not found"}
+                {success:false, message: "booking not found"}
             )
         } 
 
