@@ -112,7 +112,17 @@ function page() {
                     currency: "INR",
                     name: "RideNest",
                     description: "Ride Payment",
-                    order_id: data.orderId
+                    order_id: data.orderId, 
+                    handler : async function(response:any) { 
+                        const {data} = await axios.post("/api/payment/verify", { 
+                            bookingId:booking._id, 
+                            ...response
+                        })
+
+                        if(data.success) { 
+                            window.location.href=`/ride/${booking._id}`
+                        }
+                    }
                 }) 
 
                 paymentObject.open()
