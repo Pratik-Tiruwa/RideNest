@@ -99,12 +99,23 @@ function page() {
                 const razorpayLoaded = await loadRazorpayScript();
                 if (!razorpayLoaded) {
                     alert("razorpay script failed to load")
-                } 
+                }
 
-                const {data} = await axios.post("/api/payment/create", { 
-                    bookingId:booking._id
+                const { data } = await axios.post("/api/payment/create", {
+                    bookingId: booking._id
                 })
-                console.log(data)
+
+
+                const paymentObject = new (window as any).Razorpay({
+                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                    amount: data.amount,
+                    currency: "INR",
+                    name: "RideNest",
+                    description: "Ride Payment",
+                    order_id: data.orderId
+                }) 
+
+                paymentObject.open()
             }
         } catch (error) {
             console.log(error)
