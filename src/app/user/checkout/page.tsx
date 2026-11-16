@@ -93,7 +93,7 @@ function page() {
 
     const handleConfirmPayment = async () => {
         if (!booking || !paymentMethod) return
-
+        setLoading(true)
         try {
             if (paymentMethod == "online") {
                 const razorpayLoaded = await loadRazorpayScript();
@@ -112,23 +112,33 @@ function page() {
                     currency: "INR",
                     name: "RideNest",
                     description: "Ride Payment",
-                    order_id: data.orderId, 
-                    handler : async function(response:any) { 
-                        const {data} = await axios.post("/api/payment/verify", { 
-                            bookingId:booking._id, 
+                    order_id: data.orderId,
+                    handler: async function (response: any) {
+                        const { data } = await axios.post("/api/payment/verify", {
+                            bookingId: booking._id,
                             ...response
                         })
+                        setLoading(false)
 
-                        if(data.success) { 
-                            window.location.href=`/ride/${booking._id}`
+                        if (data.success) {
+                            setStatus("confirmed")
+                            window.location.href = `/ride/${booking._id}`
                         }
                     }
-                }) 
+                })
 
                 paymentObject.open()
+            } else {
+                const { data } = await axios.get(`/api/booking/${booking._id}/confirm`)
+                setLoading(false)
+                if (data.success) {
+                    setStatus("confirmed")
+                    window.location.href = `/ride/${booking._id}`
+                }
             }
         } catch (error) {
             console.log(error)
+            setLoading(false)
         }
     }
 
