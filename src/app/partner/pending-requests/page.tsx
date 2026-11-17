@@ -5,6 +5,7 @@ import axios from 'axios'
 import { BookingStatus, PaymentStatus } from '@/models/booking.model'
 import { Clock, IndianRupee, Loader2, MapPin, Navigation } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { getSocket } from '@/lib/socket'
 
 
 interface IBooking {
@@ -85,6 +86,16 @@ function page() {
 
     useEffect(() => {
         fetchPendingRequests()
+    }, [])
+
+    useEffect(() => {
+        const socket = getSocket();
+        socket.on("new-booking", (data) => {
+            setBookings((prev) => [...prev, data])     
+        })
+        return () => {
+            socket.off("new-booking")
+        }
     }, [])
 
     return (
