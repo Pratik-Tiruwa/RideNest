@@ -6,6 +6,7 @@ import { MdElectricRickshaw } from "react-icons/md"
 import { FaTruckPickup } from "react-icons/fa6"
 import { useSearchParams, useRouter } from 'next/navigation'
 import axios from 'axios'
+import { getSocket } from '@/lib/socket'
 
 const VEHICLE_META: any = {
     bike: { label: "Bike", Icon: Bike },
@@ -67,7 +68,17 @@ function page() {
             console.log(error?.reponse?.data?.message || error?.message)
             setLoading(false)
         }
-    }
+    } 
+
+    useEffect(() => { 
+        const socket = getSocket(); 
+        socket.on("accept-booking", (data) => { 
+            setStatus(data)
+        })
+        return () => {
+            socket.off("accept-booking")
+        } 
+    },[])
 
     const loadRazorpayScript = () => {
         return new Promise((resolve) => {
