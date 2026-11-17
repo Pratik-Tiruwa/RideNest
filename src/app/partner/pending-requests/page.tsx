@@ -3,11 +3,12 @@ import React, { useEffect, useState } from 'react'
 import { motion } from "motion/react"
 import axios from 'axios'
 import { BookingStatus, PaymentStatus } from '@/models/booking.model'
-import { Clock, IndianRupee, Loader2, MapPin, Navigation } from 'lucide-react' 
+import { Clock, IndianRupee, Loader2, MapPin, Navigation } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 
 interface IBooking {
-    _id:string,
+    _id: string,
     user: string,
     driver: string,
     vehicle: string,
@@ -31,7 +32,7 @@ interface IBooking {
 
     bookingStatus: BookingStatus
     paymentStatus: PaymentStatus
-    paymentDeadline:Date
+    paymentDeadline: Date
 
     adminCommission: number
     partnerAmount: number
@@ -50,6 +51,7 @@ function page() {
 
     const [bookings, setBookings] = useState<IBooking[]>([])
     const [loading, setLoading] = useState(false)
+    const router = useRouter()
 
     const fetchPendingRequests = async () => {
         try {
@@ -61,21 +63,21 @@ function page() {
             console.log(error)
             setLoading(false)
         }
-    } 
+    }
 
-    const handleAccept = async(id:string) => { 
+    const handleAccept = async (id: string) => {
         try {
-            const {data} = await axios.get(`/api/partner/bookings/${id}/accept`)
-            console.log(data)
+            const { data } = await axios.get(`/api/partner/bookings/${id}/accept`)
+            router.push("/partner/bookings")
         } catch (error) {
             console.log(error)
         }
     }
 
-    const handleReject = async(id:string) => { 
+    const handleReject = async (id: string) => {
         try {
-            const {data} = await axios.get(`/api/partner/bookings/${id}/reject`)
-            console.log(data)
+            const { data } = await axios.get(`/api/partner/bookings/${id}/reject`)
+            window.location.reload()
         } catch (error) {
             console.log(error)
         }
@@ -116,43 +118,43 @@ function page() {
                                 transition={{ duration: 0.5 }}
                                 className='bg-white rounded-2xl border border-gray-200 p-8 shadow-sm hover:shadow-md transition'
                             >
-                                <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8'> 
+                                <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8'>
 
                                     <div className='flex-1 space-y-6'>
 
                                         <div className='flex gap-4'>
                                             <div className='bg-gray-100 p-3 rounded-lg flex items-center justify-center'>
-                                                <MapPin size={18}  />
+                                                <MapPin size={18} />
                                             </div>
                                             <div>
                                                 <p className='text-xs uppercase text-gray-400 mb-1'>PickUp Location</p>
                                                 <p className='text-gray-900 font-medium'>{b.pickUpAddress}</p>
                                             </div>
-                                        </div> 
+                                        </div>
 
                                         <div className='flex gap-4'>
                                             <div className='bg-gray-100 p-3 rounded-lg flex items-center justify-center'>
-                                                <Navigation size={18}  />
+                                                <Navigation size={18} />
                                             </div>
                                             <div>
                                                 <p className='text-xs uppercase text-gray-400 mb-1'>Drop Location</p>
                                                 <p className='text-gray-900 font-medium'>{b.dropAddress}</p>
                                             </div>
-                                        </div> 
+                                        </div>
 
                                         <div className='flex items-center gap-2 text-sm text-gray-500 mt-2'>
                                             <Clock size={14} className='opacity-70' />
                                             <span className='font-medium'>
                                                 {new Date(b?.createdAt!).toLocaleString("en-IN", {
-                                                    day:"2-digit", 
-                                                    month:"short", 
-                                                    year:"numeric", 
-                                                    hour:"2-digit", 
-                                                    minute:"2-digit"
+                                                    day: "2-digit",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit"
                                                 })}
                                             </span>
                                         </div>
-                                    </div> 
+                                    </div>
 
                                     <div className='flex flex-col justify-between lg:items-end gap-6 w-full lg:w-auto'>
 
@@ -165,16 +167,16 @@ function page() {
                                         </div>
 
                                         <div className='flex gap-4 w-full lg:w-auto'>
-                                            <button 
-                                            onClick={()=>handleReject(b._id)}
-                                            className='px-6 py-3 rounded-xl border border-gray-300 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-100 transition-all duration-200 active:scale-[0.98] disabled:opacity-50'>
+                                            <button
+                                                onClick={() => handleReject(b._id)}
+                                                className='px-6 py-3 rounded-xl border border-gray-300 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-100 transition-all duration-200 active:scale-[0.98] disabled:opacity-50'>
                                                 Reject
-                                                </button>
-                                            <button 
-                                            onClick={()=>handleAccept(b._id)}
-                                            className='px-8 py-3 rounded-xl bg-black text-white text-sm font-semibold shadow-md hover:bg-gray-900 hover:shadow-lg transition-all duration-200 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center'>
+                                            </button>
+                                            <button
+                                                onClick={() => handleAccept(b._id)}
+                                                className='px-8 py-3 rounded-xl bg-black text-white text-sm font-semibold shadow-md hover:bg-gray-900 hover:shadow-lg transition-all duration-200 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center'>
                                                 Accept Ride
-                                                </button>
+                                            </button>
                                         </div>
 
                                     </div>

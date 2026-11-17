@@ -16,7 +16,7 @@ const VEHICLE_META: any = {
 }
 
 type Status = "idle" | "requested" | "awaiting_payment"
-    | "rejected" | "expired" | "cancelled" | "payment" | "confirmed";
+    | "rejected" | "expired" | "payment" | "confirmed";
 
 
 function page() {
@@ -155,7 +155,7 @@ function page() {
     const handleCancelBooking = async () => {
         try {
             const { data } = await axios.get(`/api/booking/${booking._id}/cancel`)
-            console.log(data)
+            setStatus("idle")
         } catch (error) {
             console.log(error)
         }
@@ -502,46 +502,46 @@ function page() {
                                             <div className='w-24 h-24 rounded-full bg-zinc-100 border-2 border-zinc-200 flex items-center justify-center'>
                                                 <CheckCircle size={44} className='text-zinc-900' />
                                             </div>
-                                            {[0,1].map(i => ( 
-                                                <motion.div 
-                                                initial={{scale:1, opacity:0.5}}
-                                                animate={{scale:2.2 + i * 0.6, opacity:0}}
-                                                transition={{duration:0.9, delay:0.2 + i * 0.15}}
-                                                className='absolute inset-0 rounded-full border-2 border-zinc-900'
-                                                /> 
+                                            {[0, 1].map(i => (
+                                                <motion.div
+                                                    initial={{ scale: 1, opacity: 0.5 }}
+                                                    animate={{ scale: 2.2 + i * 0.6, opacity: 0 }}
+                                                    transition={{ duration: 0.9, delay: 0.2 + i * 0.15 }}
+                                                    className='absolute inset-0 rounded-full border-2 border-zinc-900'
+                                                />
                                             ))}
 
                                         </motion.div>
                                         <div>
                                             <motion.h3
-                                            initial={{opacity:0, y:8}}
-                                            animate={{opacity:1, y:0}}
-                                            transition={{delay:0.3}}
-                                            className='text-2xl font-black text-zinc-900 mb-1'
+                                                initial={{ opacity: 0, y: 8 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.3 }}
+                                                className='text-2xl font-black text-zinc-900 mb-1'
                                             >
                                                 Ride Confirmed!
-                                                </motion.h3>
+                                            </motion.h3>
 
-                                                <motion.p
-                                                initial={{opacity:0}}
-                                                animate={{opacity:1}}
-                                                transition={{delay:0.6}}
+                                            <motion.p
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ delay: 0.6 }}
                                                 className='text-zinc-400 text-sm font-medium max-w-xs'
-                                                >
+                                            >
                                                 Your driver is on the way. Track live from the ride screen.
-                                                </motion.p>
-                                        </div> 
+                                            </motion.p>
+                                        </div>
 
-                                        <motion.button 
-                                        initial={{opacity:0, y:8}}
-                                        animate={{opacity:1, y:0}}
-                                        transition={{delay:0.5}}
-                                        whileTap={{scale:0.97}}
-                                        whileHover={{scale:1.03}}
-                                        onClick={()=> {window.location.href = `/ride/${booking._id}`;}}
-                                        className='flex items-center gap-2.5 bg-zinc-900 hover:bg-black text-white font-black text-sm px-8 py-4 rounded-2xl transition-colors shadow-md'
-                                        
-                                        > 
+                                        <motion.button
+                                            initial={{ opacity: 0, y: 8 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.5 }}
+                                            whileTap={{ scale: 0.97 }}
+                                            whileHover={{ scale: 1.03 }}
+                                            onClick={() => { window.location.href = `/ride/${booking._id}`; }}
+                                            className='flex items-center gap-2.5 bg-zinc-900 hover:bg-black text-white font-black text-sm px-8 py-4 rounded-2xl transition-colors shadow-md'
+
+                                        >
                                             Track Your Ride <ArrowRight size={16} />
                                         </motion.button>
 
