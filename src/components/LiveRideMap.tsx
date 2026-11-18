@@ -8,6 +8,12 @@ type Props = {
     pickUpLocation: [number, number] | null,
     dropLocation: [number, number] | null,
     mapStatus: "arriving" | "ongoing" | "completed"
+    onStats:(data:{
+        distanceToPickUp: number, 
+        etaToPickUp: number, 
+        distanceToDrop: number, 
+        etaToDrop: number
+    }) => void
 
 }
 
@@ -67,7 +73,7 @@ const driverIcon = new L.DivIcon({
     iconAnchor: [19, 19]
 })
 
-function LiveRideMap({ driverLocation, pickUpLocation, dropLocation, mapStatus }: Props) {
+function LiveRideMap({ driverLocation, pickUpLocation, dropLocation, mapStatus, onStats }: Props) {
 
     const [routeToPickUp, setRouteToPickUp] = useState<[number, number][]>([])
     const [routeToDrop, setRouteToDrop] = useState<[number, number][]>([])
@@ -107,7 +113,15 @@ function LiveRideMap({ driverLocation, pickUpLocation, dropLocation, mapStatus }
 
                     if (dropRoute) {
                         setRouteToDrop(dropRoute.geometry.coordinates.map(([lon, lat]: number[]) => [lat, lon]))
-                    }
+                    } 
+
+                    onStats?.({
+                        distanceToPickUp:(pickUpRoute?.distance ?? 0)/1000,
+                        etaToPickUp:(pickUpRoute?.duration ?? 0)/60, 
+                        distanceToDrop: (dropRoute?.distance ?? 0)/1000, 
+                        etaToDrop: (dropRoute?.duration ?? 0)/60
+                    })
+
                 } else {
                     setRouteToPickUp([])
                     const dropRoute = await getRoute(
@@ -118,7 +132,14 @@ function LiveRideMap({ driverLocation, pickUpLocation, dropLocation, mapStatus }
                     )
                     if (dropRoute) {
                         setRouteToDrop(dropRoute.geometry.coordinates.map(([lon, lat]: number[]) => [lat, lon]))
-                    }
+                    } 
+
+                    onStats?.({
+                        distanceToPickUp:0,
+                        etaToPickUp:0,
+                        distanceToDrop: (dropRoute?.distance ?? 0)/1000, 
+                        etaToDrop: (dropRoute?.duration ?? 0)/60
+                    })
 
                 }
             } catch (error) {
