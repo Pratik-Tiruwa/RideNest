@@ -12,6 +12,7 @@ import { Bike, Car, ChevronRight, LogOut, Menu, Truck, X } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { setUserData } from '@/redux/userSlice'
 import axios from 'axios'
+import { getSocket } from '@/lib/socket'
 
 
 const Nav_items = ["Home", "Bookings", "About Us", "Contact"]
@@ -26,7 +27,7 @@ function Navbar() {
   const router = useRouter();
 
   const { userData } = useSelector((state: RootState) => state.user)
-  const [pendingCount, setPendingCount] = useState()
+  const [pendingCount, setPendingCount] = useState(0)
   const dispatch = useDispatch<AppDispatch>()
 
   const handleLogout = async () => {
@@ -50,6 +51,16 @@ function Navbar() {
       fetchCount()
     }
   }, [userData?.role])
+
+  useEffect(() => {
+    const socket = getSocket();
+    socket.on("new-booking", (data) => {
+      setPendingCount(prev => prev + 1)
+    })
+    return () => {
+      socket.off("new-booking")
+    }
+  }, [])
 
   return (
     <>

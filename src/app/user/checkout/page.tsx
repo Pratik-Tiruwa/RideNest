@@ -68,17 +68,21 @@ function page() {
             console.log(error?.reponse?.data?.message || error?.message)
             setLoading(false)
         }
-    } 
+    }
 
-    useEffect(() => { 
-        const socket = getSocket(); 
-        socket.on("accept-booking", (data) => { 
+    useEffect(() => {
+        const socket = getSocket();
+        socket.on("accept-booking", (data) => {
+            setStatus(data)
+        })
+        socket.on("reject-booking", (data) => {
             setStatus(data)
         })
         return () => {
             socket.off("accept-booking")
-        } 
-    },[])
+            socket.off("reject-booking")
+        }
+    }, [])
 
     const loadRazorpayScript = () => {
         return new Promise((resolve) => {
@@ -289,7 +293,7 @@ function page() {
 
                         <div className='flex-1 p-8 sm:p-10 flex flex-col'>
                             <AnimatePresence mode='wait'>
-                                {status == "idle" && (
+                                {(status == "idle" || status == "rejected") && (
                                     <motion.div
 
                                         initial={{ opacity: 0, y: 12 }}
