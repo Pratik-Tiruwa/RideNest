@@ -1,4 +1,5 @@
 'use client'
+import LiveRideMap from '@/components/LiveRideMap'
 import { IBooking } from '@/models/booking.model'
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
@@ -7,6 +8,9 @@ function page() {
 
     const [booking,setBooking] = useState<IBooking | null>(null)
     const [loading, setLoading] = useState(false)
+    const [driverPos, setDriverPos] = useState<[Number, Number] | null>(null)
+    const [pickUpPos, setPickUpPos] = useState<[Number, Number] | null>(null) 
+    const [dropPos, setDropPos] = useState<[Number, Number] | null>(null)
 
     useEffect(() => {
         async function fetch() {
@@ -14,6 +18,8 @@ function page() {
             try {
                 const { data } = await axios.get("/api/partner/my-active");
                 setBooking(data)
+                setPickUpPos([data.pickUpLocation.coordinates[1],data.pickUpLocation.coordinates[0]])
+                setDropPos([data.dropLocation.coordinates[1],data.dropLocation.coordinates[0]])
                 setLoading(false)
             } catch (error: any) {
                 console.log(error.response.data.message)
@@ -21,7 +27,22 @@ function page() {
             }
         }
         fetch()
-    }, []) 
+    }, [])  
+
+    useEffect(() => { 
+        if(!navigator.geolocation) return; 
+
+        const watchId = navigator.geolocation.watchPosition((pos) => { 
+            const lat = pos.coords.latitude
+            const lon = pos.coords.longitude
+            setDriverPos([lat, lon])
+        }, 
+    (error) => {console.log("gps error", error)}, 
+    {enableHighAccuracy: true, maximumAge:2000, timeout:10000}
+    ) 
+
+    return () => {navigator.geolocation.clearWatch(watchId)}
+    },[])
 
     if(loading) { 
         return ( 
@@ -37,7 +58,13 @@ function page() {
 
     return (
         <div className='h-screen w-full bg-zinc-100 flex flex-col lg:flex-row overflow-hidden'>
-
+            <div className='relative flex-1 h-full z-0'>
+                <LiveRideMap 
+                driverLocation={driverPos}
+                pickUpLocation={pickUpPos}
+                dropLocation={dropPos}
+                />
+            </div>
         </div>
     )
 }
