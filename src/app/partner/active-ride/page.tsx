@@ -1,16 +1,29 @@
 'use client'
 import LiveRideMap from '@/components/LiveRideMap'
-import { IBooking } from '@/models/booking.model'
+import { BookingStatus, IBooking } from '@/models/booking.model'
 import axios from 'axios'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react' 
+
+
+const MAP_STATUS : Record<BookingStatus, "arriving" | "ongoing" | "completed"> = { 
+    idle :                  "arriving",
+    requested :             "arriving", 
+    awaiting_payment :      "arriving", 
+    confirmed:              "arriving", 
+    started :               "ongoing", 
+    completed :             "completed", 
+    cancelled :             "completed", 
+    rejected :              "completed", 
+    expired:                "completed"
+};
 
 function page() {
 
     const [booking,setBooking] = useState<IBooking | null>(null)
     const [loading, setLoading] = useState(false)
-    const [driverPos, setDriverPos] = useState<[Number, Number] | null>(null)
-    const [pickUpPos, setPickUpPos] = useState<[Number, Number] | null>(null) 
-    const [dropPos, setDropPos] = useState<[Number, Number] | null>(null)
+    const [driverPos, setDriverPos] = useState<[number, number] | null>(null)
+    const [pickUpPos, setPickUpPos] = useState<[number, number] | null>(null) 
+    const [dropPos, setDropPos] = useState<[number, number] | null>(null)
 
     useEffect(() => {
         async function fetch() {
@@ -63,6 +76,7 @@ function page() {
                 driverLocation={driverPos}
                 pickUpLocation={pickUpPos}
                 dropLocation={dropPos}
+                mapStatus={MAP_STATUS[booking?.bookingStatus!]}
                 />
             </div>
         </div>

@@ -1,11 +1,13 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import { MapContainer, Marker, TileLayer } from 'react-leaflet'
 import L from "leaflet"
 
 type Props = {
-    driverLocation: [Number, Number] | null,
-    pickUpLocation: [Number, Number] | null,
-    dropLocation: [Number, Number] | null
+    driverLocation: [number, number] | null,
+    pickUpLocation: [number, number] | null,
+    dropLocation: [number, number] | null, 
+    mapStatus: "arriving" | "ongoing" | "completed"
+
 }
 
 const pickUpIcon = new L.DivIcon({
@@ -64,7 +66,13 @@ const driverIcon = new L.DivIcon({
     iconAnchor: [19, 19]
 })
 
-function LiveRideMap({ driverLocation, pickUpLocation, dropLocation }: Props) {
+function LiveRideMap({ driverLocation, pickUpLocation, dropLocation, mapStatus}: Props) { 
+
+    useEffect(() => { 
+        if(!driverLocation) return; 
+         
+    },[])
+
     return (
         <div className='relative h-full w-full bg-zinc-100'>
             <MapContainer
