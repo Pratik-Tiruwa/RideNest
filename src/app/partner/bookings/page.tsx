@@ -297,7 +297,7 @@ function page() {
                         </span>
                       </div>
 
-                      {b.bookingStatus !== "completed" && (
+                      {(b.bookingStatus === "completed" || b.bookingStatus === "confirmed" || b.bookingStatus === "started") && (
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => router.push("/partner/active-ride")}
