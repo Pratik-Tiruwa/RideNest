@@ -91,7 +91,7 @@ function page() {
     useEffect(() => {
         const socket = getSocket();
         socket.on("new-booking", (data) => {
-            setBookings((prev) => [...prev, data])     
+            setBookings((prev) => [...prev, data])
         })
         return () => {
             socket.off("new-booking")

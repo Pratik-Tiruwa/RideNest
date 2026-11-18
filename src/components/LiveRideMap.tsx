@@ -1,11 +1,12 @@
-import React, {useEffect} from 'react'
-import { MapContainer, Marker, TileLayer } from 'react-leaflet'
+import React, { useEffect, useState } from 'react'
+import { MapContainer, Marker, Polyline, TileLayer } from 'react-leaflet'
 import L from "leaflet"
+import axios from 'axios'
 
 type Props = {
     driverLocation: [number, number] | null,
     pickUpLocation: [number, number] | null,
-    dropLocation: [number, number] | null, 
+    dropLocation: [number, number] | null,
     mapStatus: "arriving" | "ongoing" | "completed"
 
 }
@@ -66,12 +67,71 @@ const driverIcon = new L.DivIcon({
     iconAnchor: [19, 19]
 })
 
-function LiveRideMap({ driverLocation, pickUpLocation, dropLocation, mapStatus}: Props) { 
+function LiveRideMap({ driverLocation, pickUpLocation, dropLocation, mapStatus }: Props) {
 
-    useEffect(() => { 
-        if(!driverLocation) return; 
-         
-    },[])
+    const [routeToPickUp, setRouteToPickUp] = useState<[number, number][]>([])
+    const [routeToDrop, setRouteToDrop] = useState<[number, number][]>([])
+
+    useEffect(() => {
+        if (!driverLocation) return;
+        const [pLat, pLon] = pickUpLocation as [number, number]
+        const [dLat, dLon] = dropLocation as [number, number]
+        const [drLat, drLon] = driverLocation as [number, number]
+
+        const getRoute = async (startLat: number, startLon: number, endLat: number, endLon: number) => {
+            const res = await axios.get(
+                `https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson`)
+            return res.data.routes?.[0]
+        }
+
+        const fetchRoutes = async () => {
+            try {
+                if (mapStatus === "arriving") {
+                    const pickUpRoute = await getRoute(
+                        drLat,
+                        drLon,
+                        pLat,
+                        pLon
+                    )
+
+                    const dropRoute = await getRoute(
+                        dLat,
+                        dLon,
+                        drLat,
+                        drLon
+                    )
+
+                    if (pickUpRoute) {
+                        setRouteToPickUp(pickUpRoute.geometry.coordinates.map(([lon, lat]: number[]) => [lat, lon]))
+                    }
+
+                    if (dropRoute) {
+                        setRouteToDrop(dropRoute.geometry.coordinates.map(([lon, lat]: number[]) => [lat, lon]))
+                    }
+                } else {
+                    setRouteToPickUp([])
+                    const dropRoute = await getRoute(
+                        dLat,
+                        dLon,
+                        drLat,
+                        drLon
+                    )
+                    if (dropRoute) {
+                        setRouteToDrop(dropRoute.geometry.coordinates.map(([lon, lat]: number[]) => [lat, lon]))
+                    }
+
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        fetchRoutes();
+    }, [driverLocation, mapStatus])
+
+    const showPickUpMarker = mapStatus === "arriving"
+    const showPickUpRoute = mapStatus === "arriving" && routeToPickUp.length > 0
+    const showDropRoute = mapStatus !== "completed" && routeToDrop.length > 0
 
     return (
         <div className='relative h-full w-full bg-zinc-100'>
@@ -86,7 +146,7 @@ function LiveRideMap({ driverLocation, pickUpLocation, dropLocation, mapStatus}:
                     url={process.env.NEXT_PUBLIC_CARDO_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
                 />
 
-                {pickUpLocation && (
+                {showPickUpMarker && (
                     <Marker
                         position={pickUpLocation as any}
                         icon={pickUpIcon}
@@ -107,6 +167,14 @@ function LiveRideMap({ driverLocation, pickUpLocation, dropLocation, mapStatus}:
                     icon={driverIcon}
                     draggable
                 />}
+
+                {showPickUpRoute && (
+                    <Polyline positions={routeToPickUp} pathOptions={{ color: "#0a0a0a", weight: 4, dashArray: "2 10", lineCap: "round" }} />
+                )}
+
+                {showDropRoute && (
+                    <Polyline positions={routeToDrop} pathOptions={{ color: "#0a0a0a", weight: 4, lineCap: "round", lineJoin: "round" }} />
+                )}
             </MapContainer>
         </div>
     )
