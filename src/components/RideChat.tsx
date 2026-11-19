@@ -1,21 +1,66 @@
 'use client'
 import axios from 'axios'
-import React from 'react'
+import { Send } from 'lucide-react'
+import React, { useEffect, useState } from 'react' 
+
+type message={
+  bookingId:string, 
+  sender: "user" | "driver", 
+  text:string
+}
 
 function RideChat({ currentRole, bookingId, userName, driverName }: any) {
 
   const otherName = currentRole == "user" ? driverName : userName
   const myName = currentRole == "user" ? userName : driverName
+  const [messages, setMessages] = useState<message[]>([])
+  const [lastMessage, setLastMessage] = useState("") 
+  const [text, setText] = useState("")
+  const [suggestions, setSuggestions] = useState<string[]>([])
 
-  const get = async () => {
+  const sendMessage = async() => { 
     try {
-      const { data } = await axios.get("/api/chat/ai-suggestions")
+      const {data} = await axios.post("/api/chat/sender", { 
+        sender:currentRole, 
+        text,
+        bookingId
+      })
       console.log(data)
-    } catch (error: any) {
+    } catch (error) {
+      console.log(error)
+    }
+  } 
+
+  const getAllMsgs = async() => { 
+    try {
+      const {data} = await axios.get("/api/chat/get-all", { 
+        params : { 
+          bookingId
+        }
+      })
+      console.log(data)
+      setMessages(data)
+    } catch (error) {
       console.log(error)
     }
   }
 
+  const getAISuggestions = async() => { 
+    try {
+      const {data} = await axios.post("/api/chat/ai-suggestions", { 
+        role:currentRole, 
+        lastMessage
+      })
+      console.log(data)
+      setSuggestions(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => { 
+    getAllMsgs();
+  }, [])
 
   return (
     <div className='flex flex-col h-full min-h-0 bg-white rounded-2xl overflow-hidden border border-zinc-100'>
@@ -32,10 +77,24 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
           <p className='text-sm font-bold text-zinc-900 leading-none'>{otherName}</p>
           <p className='text-[11px] text-emerald-500 font-semibold mt-0.5'>Active Now</p>
         </div>
-
       </div>
 
-      <button onClick={get}>Click</button>
+      <div className='flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-zinc-50
+      ' style={{ scrollbarWidth: "none", msOverflowStyle: "none"}}>
+
+          <style>{`div::-webkit-scrollbar {display: none}`}</style> 
+
+          {messages.length === 0 && ( 
+            <div className='flex flex-col items-center justify-center h-full gap-3 py-16'>
+              <div className='w-12 h-12 rounded-2xl bg-zinc-100 flex items-center justify-center'>
+                <Send size={18} className='text-zinc-400' />
+              </div>
+              <p className='text-sm text-zinc-400 font-medium'>No messages yet</p>
+              <p className='text-xs text-zinc-300'>Start the conversation below</p>
+            </div>
+          )}
+      </div>
+
     </div>
   )
 }

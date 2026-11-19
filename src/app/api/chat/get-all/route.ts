@@ -4,8 +4,17 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
     try {
-        await connectDb();
-        const { bookingId } = await req.json();
+        await connectDb(); 
+
+
+        const bookingId = req.nextUrl.searchParams.get("bookingId"); 
+
+        if(!bookingId) { 
+            return NextResponse.json(
+                {message : "bookingId is required"}, 
+                {status : 400}
+            )
+        }
 
         const msgs = await ChatMessage.find({
             bookingId
