@@ -2,11 +2,15 @@
 import axios from 'axios'
 import { Send } from 'lucide-react'
 import React, { useEffect, useState } from 'react' 
+import {motion} from "motion/react"
+import { useSelector } from 'react-redux'
+import { RootState } from '@/redux/store'
 
 type message={
   bookingId:string, 
   sender: "user" | "driver", 
-  text:string
+  text:string, 
+  createdAt:Date
 }
 
 function RideChat({ currentRole, bookingId, userName, driverName }: any) {
@@ -15,7 +19,8 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
   const myName = currentRole == "user" ? userName : driverName
   const [messages, setMessages] = useState<message[]>([])
   const [lastMessage, setLastMessage] = useState("") 
-  const [text, setText] = useState("")
+  const [text, setText] = useState("") 
+  const {userData} = useSelector((state:RootState) => state.user)
   const [suggestions, setSuggestions] = useState<string[]>([])
 
   const sendMessage = async() => { 
@@ -56,6 +61,11 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
     } catch (error) {
       console.log(error)
     }
+  } 
+
+  const formatTime = (dateInput:Date | string) => { 
+    const date = new Date(dateInput)
+    return date.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})
   }
 
   useEffect(() => { 
@@ -92,6 +102,30 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
               <p className='text-sm text-zinc-400 font-medium'>No messages yet</p>
               <p className='text-xs text-zinc-300'>Start the conversation below</p>
             </div>
+          )} 
+
+          {messages.length>0 && ( 
+            messages.map((m,i) => { 
+              const isMine = m.sender.toString() === userData?._id.toString() 
+              return ( 
+                <motion.div
+                key={i}
+                initial={{opacity:0, y:8, scale:0.97}}
+                animate={{opacity:1, y:0, scale:1}}
+                transition={{duration:0.8, ease: [0.22, 1, 0.36, 1]}}
+                className={`flex items-end gap-2 ${isMine ? "justify-end" : "justify-start"}`}
+                >
+
+                  <div className={`max-w-[72%] px-3.5 py-2.5 text-sm leading-relaxed rounded-2xl shadow-sm 
+                  ${isMine ? "bg-zinc-950 text-white rounded-br-sm" : "bg-white border border-zinc-200 text-zinc-900 rounded-bl-sm"}
+                    `}>
+                        <p className='wrap-break-word'>{m.text}</p>
+                        <span className='text-[10px]'>{formatTime(m.createdAt)}</span>
+                  </div>
+
+                </motion.div>
+              )
+            })
           )}
       </div>
 
