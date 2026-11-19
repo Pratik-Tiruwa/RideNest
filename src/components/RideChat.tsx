@@ -11,7 +11,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
     try {
       const { data } = await axios.get("/api/chat/ai-suggestions")
       console.log(data)
-    } catch (error) {
+    } catch (error: any) {
       console.log(error)
     }
   }
