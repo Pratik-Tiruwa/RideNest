@@ -112,7 +112,7 @@ function PanelContent({ isActive, displayEta, displayDistance, cfg, status, book
                     >
 
                         <div className='rounded-2xl overflow-hidden border border-zinc-100 h-115'>
-                            <RideChat />
+                            <RideChat currentRole={currentRole} bookingId={booking._id} userName={booking.user.name || "customer"} driverName={booking.driver.name || "driver"}   />
                         </div>
 
                     </motion.div>
