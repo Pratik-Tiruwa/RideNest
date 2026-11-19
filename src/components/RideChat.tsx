@@ -7,6 +7,16 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
   const otherName = currentRole == "user" ? driverName : userName
   const myName = currentRole == "user" ? userName : driverName
 
+  const get = async () => {
+    try {
+      const { data } = await axios.get("/api/chat/ai-suggestions")
+      console.log(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
   return (
     <div className='flex flex-col h-full min-h-0 bg-white rounded-2xl overflow-hidden border border-zinc-100'>
 
@@ -25,7 +35,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
 
       </div>
 
-
+      <button onClick={get}>Click</button>
     </div>
   )
 }
