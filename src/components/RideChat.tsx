@@ -6,6 +6,7 @@ import { motion } from "motion/react"
 import { useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
 import { AnimatePresence } from 'motion/react'
+import { current } from '@reduxjs/toolkit'
 
 type message = {
   bookingId: string,
@@ -23,7 +24,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
   const [text, setText] = useState("")
   const { userData } = useSelector((state: RootState) => state.user)
   const [suggestions, setSuggestions] = useState<string[]>([])
-  const [showAI, setShowAI] = useState(true)
+  const [showAI, setShowAI] = useState(false)
   const [aiLoading, setAiLoading] = useState(false)
 
   const sendMessage = async () => {
@@ -55,13 +56,14 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
 
   const getAISuggestions = async () => {
     setAiLoading(true)
+    setShowAI(true)
     try {
       const { data } = await axios.post("/api/chat/ai-suggestions", {
         role: currentRole,
         lastMessage
       })
       console.log(data)
-      setSuggestions(data)
+      setSuggestions(data.suggestions)
       setAiLoading(false)
     } catch (error) {
       console.log(error)
@@ -112,7 +114,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
 
         {messages.length > 0 && (
           messages.map((m, i) => {
-            const isMine = m.sender.toString() === userData?._id.toString()
+            const isMine = m.sender === currentRole
             return (
               <motion.div
                 key={i}
@@ -173,7 +175,10 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
                     </motion.div>
                   ))}
 
-                  <button className='text-[11px] text-violet-500 hover:text-violet-700 font-semibold text-center mt-1 transitions-colors'>
+                  <button
+                    onClick={getAISuggestions}
+                    className='text-[11px] text-violet-500 hover:text-violet-700 font-semibold text-center mt-1 transitions-colors'
+                    >
                     Refresh Suggestions
                   </button>
                 </div>
@@ -183,6 +188,42 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <div className='shrink-0 px-4 pb-4 pt-2 bg-white'>
+        <div className='flex items-center gap-2 bg-zinc-100 rounded-xl pl-3 pr-1.5 py-1.5'>
+          {messages.length > 0 && (
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => getAISuggestions()}
+              className={`shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all *:
+                ${showAI ? "bg-violet-600 text-white" : "bg-white text-violet-600 hover:bg-violet-50 border border-zinc-500  hover:border-violet-300"}
+                `}
+            >
+              <Sparkle size={14} />
+            </motion.button>
+          )}
+
+          <input
+            type="text"
+            placeholder='Message...'
+            onChange={(e) => setText(e.target.value)}
+            className='flex-1 bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none py-1.5 min-w-0' />
+
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={() => sendMessage()}
+            disabled={!text.trim()}
+            className={`shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all
+              
+              ${text.trim() ? "bg-zinc-950 text-white hover:bg-zinc-800"
+                : "bg-transparent text-zinc-300 cursor-not-allowed"
+              }`}
+          >
+            <Send size={14} />
+          </motion.button>
+
+        </div>
+      </div>
 
     </div>
   )

@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
         const msgs = await ChatMessage.find({
             bookingId
-        }).sort({ createdAt: -1 })
+        })
 
         return NextResponse.json(
             msgs,
