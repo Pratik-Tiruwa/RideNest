@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
           * If RECENT_MESSAGE is in Hinglish (Roman Hindi like "kab tak aa rahe ho"), all suggestions MUST be in Hinglish (e.g., "5 minute me pahunch raha hu", "Bas raste me hu", "Thoda traffic hai, 5 min lagenge").
           * If RECENT_MESSAGE is in Hindi (Devanagari script), suggestions MUST be in Hindi.
           * If RECENT_MESSAGE is in English, suggestions MUST be in English.
-        - Return exactly 6 suggestions
+        - Return exactly 3 suggestions
         - Keep replies short (3-10 words)
         - Match the conversation context and tone 
         - Driver replies should sound professional, polite and helpful 
@@ -35,10 +35,7 @@ export async function POST(req: NextRequest) {
             "suggestions" : [ 
                 "suggestion 1", 
                 "suggestion 2",
-                "suggestion 3",
-                "suggestion 4",
-                "suggestion 5",
-                "suggestion 6"
+                "suggestion 3"
             ]    
         } 
 
