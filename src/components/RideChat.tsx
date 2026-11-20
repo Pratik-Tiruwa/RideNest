@@ -35,6 +35,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
         bookingId
       })
       console.log(data)
+      setMessages([...messages, data])
     } catch (error) {
       console.log(error)
     }
@@ -128,7 +129,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
                   ${isMine ? "bg-zinc-950 text-white rounded-br-sm" : "bg-white border border-zinc-200 text-zinc-900 rounded-bl-sm"}
                     `}>
                   <p className='wrap-break-word'>{m.text}</p>
-                  <span className='text-[10px]'>{formatTime(m.createdAt)}</span>
+                  <span className='text-[8px] text-gray-200'>{formatTime(m.createdAt)}</span>
                 </div>
 
               </motion.div>
@@ -158,7 +159,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
 
               {aiLoading ? (
                 <div className='flex flex-col gap-1.5'>
-                  {[1, 2, 3, 4].map((i) => (
+                  {[1, 2, 3].map((i) => (
                     <div key={i} className='h-9 bg-zinc-100 rounded-xl animate-pulse' />
                   ))}
                 </div>
@@ -178,7 +179,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
                   <button
                     onClick={getAISuggestions}
                     className='text-[11px] text-violet-500 hover:text-violet-700 font-semibold text-center mt-1 transitions-colors'
-                    >
+                  >
                     Refresh Suggestions
                   </button>
                 </div>
@@ -205,6 +206,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
 
           <input
             type="text"
+            value={text}
             placeholder='Message...'
             onChange={(e) => setText(e.target.value)}
             className='flex-1 bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none py-1.5 min-w-0' />
