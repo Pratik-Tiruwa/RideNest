@@ -4,7 +4,7 @@ import { BookingStatus, IBooking, PaymentStatus } from '@/models/booking.model'
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { motion } from "motion/react"
-import { Zap } from 'lucide-react'
+import { ChevronUp, Zap } from 'lucide-react'
 import PanelContent from '@/components/PanelContent'
 import { stat } from 'fs'
 import { FcPrevious } from 'react-icons/fc'
@@ -82,7 +82,8 @@ function page() {
     const [etaToPickUp, setEtaToPickUp] = useState(0)
     const [etaToDrop, setEtaToDrop] = useState(0)
     const [status, setStatus] = useState("")
-    const [chatOpen, setChatOpen] = useState(false)
+    const [chatOpen, setChatOpen] = useState(false) 
+    const [expanded, setExpanded] = useState(false)
 
     useEffect(() => {
         async function fetch() {
@@ -203,7 +204,64 @@ function page() {
                         <PanelContent {...panelProps} />
                     </div>
                 </div>
-            </motion.div>
+            </motion.div> 
+
+            <div className='lg:hidden fixed bottom-0 left-0 right-0 z-20 pointer-events-none'> 
+
+                <motion.div
+                className='bg-white rounded-t-3xl shadow-2xl pointer-events-auto overflow-hidden flex flex-col'
+                animate={{height: expanded ? "82vh" : 142 }}
+                transition={{ type:"spring", stiffness: 320, damping: 30}}
+                >
+
+                    <div 
+                    className='shrink-0 cursor-pointer select-none'
+                    onClick={()=>setExpanded(p=>!p)}
+                    > 
+
+                    <div className='pt-3 pb-1'>
+                        <div className='w-10 h-1 bg-zinc-200 rounded-full mx-auto' />
+                    </div> 
+
+                        <div className='px-5 py-2 flex items-center justify-between'>
+                            <div className='flex items-center gap-3'>
+                                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${cfg.dot}`} /> 
+
+                                <div>
+                                    <p className='text-sm font-bold text-zinc-900 leading-tight'>{cfg.label}</p>
+                                    <p className='text-xs text-zinc-400 leading-tight'>{cfg.sublabel}</p>
+                                </div>
+                            </div> 
+
+                            <div className='flex items-center gap-3'>
+                                {isActive && (
+                                    <div className='text-right'>
+                                        <p className='text-2xl font-black text-zinc-900 leading-none'>{Math.round(displayEta)}</p>
+                                        <p className='text-[10px] text-zinc-400 uppercase tracking-wider'>min</p>
+                                    </div>
+                                 )} 
+
+                                 <motion.div 
+                                 animate={{rotate: expanded ? 180 : 0}}
+                                 transition={{duration:0.28}}
+                                 className='w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center'
+                                 > 
+                                    <ChevronUp size={16} className='text-zinc-600' />
+                                 </motion.div>
+                            </div>
+                        </div>
+
+                        <div className='h-px bg-zinc-100 mx-5' />
+
+                    </div>
+
+                    <div className='flex-1 overflow-y-auto min-h-0 pb-6'>
+                        <PanelContent {...panelProps} />
+                    </div>
+
+                </motion.div>
+
+            </div>
         </div>
     )
 }
