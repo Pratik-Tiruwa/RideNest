@@ -39,7 +39,6 @@ export async function POST(req: NextRequest) {
             { status: 200 }
         );
     } catch (error) {
-        console.error("active ride for user error:", error);
         return NextResponse.json(
             { message: `active ride for user error ${error}` }, 
             { status: 500 }
