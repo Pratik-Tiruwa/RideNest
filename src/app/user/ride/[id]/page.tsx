@@ -9,6 +9,8 @@ import PanelContent from '@/components/PanelContent'
 import { stat } from 'fs'
 import { FcPrevious } from 'react-icons/fc'
 import { useParams } from 'next/navigation'
+import { getSocket } from '@/lib/socket'
+import { setDriver } from 'mongoose'
 
 const LiveRideMap = dynamic(() => import("@/components/LiveRideMap"), {
     ssr: false
@@ -96,10 +98,14 @@ function page() {
                 const { data } = await axios.post("/api/user/active-ride", {
                     bookingId: id
                 });
-                setBooking(data)
-                setStatus(data.bookingStatus)
-                setPickUpPos([data.pickUpLocation.coordinates[1], data.pickUpLocation.coordinates[0]])
-                setDropPos([data.dropLocation.coordinates[1], data.dropLocation.coordinates[0]])
+                if (data && data._id) {
+                    setBooking(data)
+                    setStatus(data.bookingStatus)
+                    if (data.pickUpLocation?.coordinates && data.dropLocation?.coordinates) {
+                        setPickUpPos([data.pickUpLocation.coordinates[1], data.pickUpLocation.coordinates[0]])
+                        setDropPos([data.dropLocation.coordinates[1], data.dropLocation.coordinates[0]])
+                    }
+                }
                 setLoading(false)
             } catch (error: any) {
                 console.log(error)
@@ -109,34 +115,44 @@ function page() {
         fetch()
     }, [id])
 
+    useEffect(() => {
+        if (!id) return;
+        const socket = getSocket();
+        socket.emit("join-ride", id);
+        socket.on("driver-location", (data: any, maybeLon?: any) => { 
+            if (typeof data === "object" && data !== null && typeof data.latitude === "number") {
+                setDriverPos([data.latitude, data.longitude])
+            } else if (typeof data === "number" && typeof maybeLon === "number") {
+                setDriverPos([data, maybeLon])
+            }
+        })
+        return () => { 
+            socket.off("join-ride") 
+            socket.off("driver-location")
+        }
+    }, [id])
     const onChatToggle = () => {
         setChatOpen(prev => !prev)
     }
 
-    useEffect(() => {
-        if (!navigator.geolocation) {
-            console.log("Geolocation is not supported");
-            return;
-        }
 
-        const watchId = navigator.geolocation.watchPosition((pos) => {
-            const lat = pos.coords.latitude
-            const lon = pos.coords.longitude
-            setDriverPos([lat, lon])
-        },
-            (error) => { console.log("gps error", error) },
-            { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
-        )
-
-        return () => { navigator.geolocation.clearWatch(watchId) }
-    }, [])
-
-    if (loading || !pickUpPos || !dropPos) {
+    if (loading) {
         return (
             <div className='h-screen w-full bg-zinc-950 flex items-center justify-center'>
                 <div className='flex flex-col items-center gap-4'>
                     <div className='w-12 h-12 rounded-full border-2 border-white/20 border-t-white animate-spin' />
                     <p className='text-white/40 text-sm tracking-widest uppercase font-medium'>Loading Ride...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (!booking || !pickUpPos || !dropPos) {
+        return (
+            <div className='h-screen w-full bg-zinc-950 flex items-center justify-center'>
+                <div className='flex flex-col items-center gap-3 text-center px-4'>
+                    <p className='text-white/80 text-lg font-semibold'>Ride Not Found</p>
+                    <p className='text-white/40 text-sm max-w-sm'>Could not find this ride or booking details.</p>
                 </div>
             </div>
         )

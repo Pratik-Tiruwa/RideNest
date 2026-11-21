@@ -8,6 +8,7 @@ import { ChevronUp, Zap } from 'lucide-react'
 import PanelContent from '@/components/PanelContent'
 import { stat } from 'fs'
 import { FcPrevious } from 'react-icons/fc'
+import { getSocket } from '@/lib/socket'
 
 const LiveRideMap = dynamic(() => import("@/components/LiveRideMap"), {
     ssr: false
@@ -82,7 +83,7 @@ function page() {
     const [etaToPickUp, setEtaToPickUp] = useState(0)
     const [etaToDrop, setEtaToDrop] = useState(0)
     const [status, setStatus] = useState("")
-    const [chatOpen, setChatOpen] = useState(false) 
+    const [chatOpen, setChatOpen] = useState(false)
     const [expanded, setExpanded] = useState(false)
 
     useEffect(() => {
@@ -90,13 +91,17 @@ function page() {
             setLoading(true)
             try {
                 const { data } = await axios.get("/api/partner/my-active");
-                setBooking(data)
-                setStatus(data.bookingStatus)
-                setPickUpPos([data.pickUpLocation.coordinates[1], data.pickUpLocation.coordinates[0]])
-                setDropPos([data.dropLocation.coordinates[1], data.dropLocation.coordinates[0]])
+                if (data && data._id) {
+                    setBooking(data)
+                    setStatus(data.bookingStatus)
+                    if (data.pickUpLocation?.coordinates && data.dropLocation?.coordinates) {
+                        setPickUpPos([data.pickUpLocation.coordinates[1], data.pickUpLocation.coordinates[0]])
+                        setDropPos([data.dropLocation.coordinates[1], data.dropLocation.coordinates[0]])
+                    }
+                }
                 setLoading(false)
             } catch (error: any) {
-                console.log(error.response.data.message)
+                console.log(error?.response?.data?.message || error?.message)
                 setLoading(false)
             }
         }
@@ -113,24 +118,63 @@ function page() {
             return;
         }
 
+        const socket = getSocket();
         const watchId = navigator.geolocation.watchPosition((pos) => {
             const lat = pos.coords.latitude
             const lon = pos.coords.longitude
             setDriverPos([lat, lon])
+
+            socket.emit("driver-location-update", {
+                bookingId: booking?._id,
+                latitude: lat,
+                longitude: lon,
+                status: status
+            })
         },
             (error) => { console.log("gps error", error) },
             { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
         )
 
         return () => { navigator.geolocation.clearWatch(watchId) }
-    }, [])
+    }, [booking?._id])
 
-    if (loading || !pickUpPos || !dropPos) {
+    useEffect(() => {
+        if (!booking?._id) return;
+        const socket = getSocket();
+        socket.emit("join-ride", booking._id);
+
+        const handleDriverLocation = (data: any, maybeLon?: any) => {
+            if (typeof data === "object" && data !== null && typeof data.latitude === "number" && typeof data.longitude === "number") {
+                setDriverPos([data.latitude, data.longitude]);
+            } else if (typeof data === "number" && typeof maybeLon === "number") {
+                setDriverPos([data, maybeLon]);
+            }
+        };
+
+        socket.on("driver-location", handleDriverLocation);
+        return () => { 
+            socket.off("join-ride");
+            socket.off("driver-location", handleDriverLocation);
+        };
+    }, [booking?._id])
+
+    if (loading) {
         return (
             <div className='h-screen w-full bg-zinc-950 flex items-center justify-center'>
                 <div className='flex flex-col items-center gap-4'>
                     <div className='w-12 h-12 rounded-full border-2 border-white/20 border-t-white animate-spin' />
                     <p className='text-white/40 text-sm tracking-widest uppercase font-medium'>Loading Ride...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (!booking || !pickUpPos || !dropPos) {
+        return (
+            <div className='h-screen w-full bg-zinc-950 flex items-center justify-center'>
+                <div className='flex flex-col items-center gap-3 text-center px-4'>
+                    <p className='text-white/80 text-lg font-semibold'>No Active Ride Found</p>
+                    <p className='text-white/40 text-sm max-w-sm'>You currently do not have any active ride in progress.</p>
                 </div>
             </div>
         )
@@ -202,34 +246,34 @@ function page() {
                 <div className='flex-1 min-h-0 overflow-y-auto'>
                     <PanelContent {...panelProps} />
                 </div>
-            </motion.div> 
+            </motion.div>
 
-            <div className='lg:hidden fixed bottom-0 left-0 right-0 z-20 pointer-events-none'> 
+            <div className='lg:hidden fixed bottom-0 left-0 right-0 z-20 pointer-events-none'>
 
                 <motion.div
-                className='bg-white rounded-t-3xl shadow-2xl pointer-events-auto overflow-hidden flex flex-col'
-                animate={{height: expanded ? "82vh" : 142 }}
-                transition={{ type:"spring", stiffness: 320, damping: 30}}
+                    className='bg-white rounded-t-3xl shadow-2xl pointer-events-auto overflow-hidden flex flex-col'
+                    animate={{ height: expanded ? "82vh" : 142 }}
+                    transition={{ type: "spring", stiffness: 320, damping: 30 }}
                 >
 
-                    <div 
-                    className='shrink-0 cursor-pointer select-none'
-                    onClick={()=>setExpanded(p=>!p)}
-                    > 
+                    <div
+                        className='shrink-0 cursor-pointer select-none'
+                        onClick={() => setExpanded(p => !p)}
+                    >
 
-                    <div className='pt-3 pb-1'>
-                        <div className='w-10 h-1 bg-zinc-200 rounded-full mx-auto' />
-                    </div> 
+                        <div className='pt-3 pb-1'>
+                            <div className='w-10 h-1 bg-zinc-200 rounded-full mx-auto' />
+                        </div>
 
                         <div className='px-5 py-2 flex items-center justify-between'>
                             <div className='flex items-center gap-3'>
-                                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${cfg.dot}`} /> 
+                                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${cfg.dot}`} />
 
                                 <div>
                                     <p className='text-sm font-bold text-zinc-900 leading-tight'>{cfg.label}</p>
                                     <p className='text-xs text-zinc-400 leading-tight'>{cfg.sublabel}</p>
                                 </div>
-                            </div> 
+                            </div>
 
                             <div className='flex items-center gap-3'>
                                 {isActive && (
@@ -237,15 +281,15 @@ function page() {
                                         <p className='text-2xl font-black text-zinc-900 leading-none'>{Math.round(displayEta)}</p>
                                         <p className='text-[10px] text-zinc-400 uppercase tracking-wider'>min</p>
                                     </div>
-                                 )} 
+                                )}
 
-                                 <motion.div 
-                                 animate={{rotate: expanded ? 180 : 0}}
-                                 transition={{duration:0.28}}
-                                 className='w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center'
-                                 > 
+                                <motion.div
+                                    animate={{ rotate: expanded ? 180 : 0 }}
+                                    transition={{ duration: 0.28 }}
+                                    className='w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center'
+                                >
                                     <ChevronUp size={16} className='text-zinc-600' />
-                                 </motion.div>
+                                </motion.div>
                             </div>
                         </div>
 
