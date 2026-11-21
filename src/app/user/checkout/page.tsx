@@ -519,6 +519,7 @@ function page() {
                                             </div>
                                             {[0, 1].map(i => (
                                                 <motion.div
+                                                    key={i}
                                                     initial={{ scale: 1, opacity: 0.5 }}
                                                     animate={{ scale: 2.2 + i * 0.6, opacity: 0 }}
                                                     transition={{ duration: 0.9, delay: 0.2 + i * 0.15 }}
