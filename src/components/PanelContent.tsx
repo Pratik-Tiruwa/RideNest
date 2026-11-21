@@ -35,7 +35,7 @@ function PanelContent({ isActive, displayEta, displayDistance, cfg, status, book
     console.log(currentRole)
 
     return (
-        <div className='flex flex-col pt-5 pb-4 gap-3'>
+        <div className='flex flex-col pt-5 pb-8 gap-3'>
             {isActive && (
                 <div className='mx-5 lg:mx-6 grid grid-cols-2 gap-2'>
                     <div className='bg-zinc-50 border-zinc-100 rounded-2xl p-4 flex items-center gap-3'>
