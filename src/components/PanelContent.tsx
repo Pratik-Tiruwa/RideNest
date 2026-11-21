@@ -32,7 +32,8 @@ function PanelContent({ isActive, displayEta, displayDistance, cfg, status, book
     const currentRole = userData?._id && booking?.driver?._id
         ? (String(userData._id) === String(booking?.driver?._id) ? "driver" : "user") : undefined;
 
-    console.log(currentRole)
+    const name = currentRole === "driver" ? (booking?.user?.name || "Customer") : (booking?.driver?.name || "Driver");
+    const phone = currentRole === "driver" ? booking?.userMobileNumber : booking?.driverMobileNumber;
 
     return (
         <div className='flex flex-col pt-5 pb-8 gap-3'>
@@ -62,12 +63,12 @@ function PanelContent({ isActive, displayEta, displayDistance, cfg, status, book
             )}
 
 
-            {booking.user && (
+            {(booking?.user || booking?.driver) && (
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className='mx-p lg:mx-6'
+                    className='mx-5 lg:mx-6'
                 >
                     <div className='bg-zinc-950 rounded-2xl p-4 flex items-center gap-4'>
                         <div className='relative shrink-0'>
@@ -79,7 +80,7 @@ function PanelContent({ isActive, displayEta, displayDistance, cfg, status, book
 
                         <div className='flex-1 min-w-0'>
                             <div className='flex items-center justify-between gap-2'>
-                                <p className='text-white font-bold text-base truncate'>{booking?.user?.name || "customer"}</p>
+                                <p className='text-white font-bold text-base truncate'>{name}</p>
                                 <div className='flex items-center gap-1 bg-white/10 px-2 py-1 rounded-full shrink-0'>
                                     <IndianRupee size={10} className='text-amber-400' />
                                     <span className='text-white text-xs font-semibold'>{booking.fare}</span>
@@ -99,9 +100,9 @@ function PanelContent({ isActive, displayEta, displayDistance, cfg, status, book
 
                     {isActive && (
                         <div className='flex gap-2 mt-2'>
-                            {booking.userMobileNumber && (
-                                <a href={`tel:${booking.userMobileNumber}`}
-                                    className={`flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 active:scale=[0.97] transition-all text-zinc-900 py-2 rounded-xl text-sm font-semibold ${canChat ? "flex-1" : "w-full"}`}
+                            {phone && (
+                                <a href={`tel:${phone}`}
+                                    className={`flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 active:scale-[0.97] transition-all text-zinc-900 py-2 rounded-xl text-sm font-semibold ${canChat ? "flex-1" : "w-full"}`}
                                 >
                                     <Phone size={15} /> Call
                                 </a>
@@ -113,7 +114,7 @@ function PanelContent({ isActive, displayEta, displayDistance, cfg, status, book
                                     className={`flex-1 flex items-center justify-center gap-2 active:scale-[0.97] transition-all py-3 rounded-xl text-sm font-semibold 
                             ${chatOpen ? "bg-zinc-200 text-zinc-900" : "bg-zinc-900 hover:bg-zinc-800 text-white"}`}>
                                     <MessageCircle size={15} />
-                                    {chatOpen ? "CloseCaht" : "Message"}</button>
+                                    {chatOpen ? "Close Chat" : "Message"}</button>
                             )}
                         </div>
                     )}
@@ -131,7 +132,7 @@ function PanelContent({ isActive, displayEta, displayDistance, cfg, status, book
                     >
 
                         <div className='rounded-2xl overflow-hidden border border-zinc-100 h-115'>
-                            <RideChat currentRole={currentRole} bookingId={booking._id} userName={booking.user.name || "customer"} driverName={booking.driver.name || "driver"} />
+                            <RideChat currentRole={currentRole} bookingId={booking._id} userName={booking?.user?.name || "customer"} driverName={booking?.driver?.name || "driver"} />
                         </div>
 
                     </motion.div>
