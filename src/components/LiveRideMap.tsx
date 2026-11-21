@@ -73,16 +73,28 @@ const driverIcon = new L.DivIcon({
     iconAnchor: [19, 19]
 })
 
+const isValidCoords = (coords: any): coords is [number, number] =>
+    Array.isArray(coords) &&
+    coords.length === 2 &&
+    typeof coords[0] === 'number' &&
+    typeof coords[1] === 'number' &&
+    !isNaN(coords[0]) &&
+    !isNaN(coords[1]);
+
 function LiveRideMap({ driverLocation, pickUpLocation, dropLocation, mapStatus, onStats }: Props) {
 
     const [routeToPickUp, setRouteToPickUp] = useState<[number, number][]>([])
     const [routeToDrop, setRouteToDrop] = useState<[number, number][]>([])
 
+    const isValidDriver = isValidCoords(driverLocation);
+    const isValidPickUp = isValidCoords(pickUpLocation);
+    const isValidDrop = isValidCoords(dropLocation);
+
     useEffect(() => {
-        if (!driverLocation) return;
-        const [pLat, pLon] = pickUpLocation as [number, number]
-        const [dLat, dLon] = dropLocation as [number, number]
-        const [drLat, drLon] = driverLocation as [number, number]
+        if (!isValidDriver || !isValidPickUp || !isValidDrop) return;
+        const [pLat, pLon] = pickUpLocation;
+        const [dLat, dLon] = dropLocation;
+        const [drLat, drLon] = driverLocation;
 
         const getRoute = async (startLat: number, startLon: number, endLat: number, endLon: number) => {
             const res = await axios.get(
@@ -167,27 +179,29 @@ function LiveRideMap({ driverLocation, pickUpLocation, dropLocation, mapStatus, 
                     url={process.env.NEXT_PUBLIC_CARDO_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
                 />
 
-                {showPickUpMarker && (
+                {isValidPickUp && showPickUpMarker && (
                     <Marker
-                        position={pickUpLocation as any}
+                        position={pickUpLocation}
                         icon={pickUpIcon}
                         draggable
                     />
                 )}
 
-                {dropLocation && (
+                {isValidDrop && (
                     <Marker
-                        position={dropLocation as any}
+                        position={dropLocation}
                         icon={dropIcon}
                         draggable
                     />
                 )}
 
-                {driverLocation && <Marker
-                    position={driverLocation as any}
-                    icon={driverIcon}
-                    draggable
-                />}
+                {isValidDriver && (
+                    <Marker
+                        position={driverLocation}
+                        icon={driverIcon}
+                        draggable
+                    />
+                )}
 
                 {showPickUpRoute && (
                     <Polyline positions={routeToPickUp} pathOptions={{ color: "#0a0a0a", weight: 4, dashArray: "2 10", lineCap: "round" }} />
