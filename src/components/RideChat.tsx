@@ -1,12 +1,13 @@
 'use client'
 import axios from 'axios'
 import { Send, Sparkle, X } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from "motion/react"
 import { useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
 import { AnimatePresence } from 'motion/react'
 import { current } from '@reduxjs/toolkit'
+import { getSocket } from '@/lib/socket'
 
 type message = {
   bookingId: string,
@@ -28,6 +29,9 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
   const [aiLoading, setAiLoading] = useState(false)
 
   const sendMessage = async () => {
+
+    const socket = getSocket();
+
     try {
       const { data } = await axios.post("/api/chat/sender", {
         sender: currentRole,
@@ -35,7 +39,8 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
         bookingId
       })
       console.log(data)
-      setMessages([...messages, data])
+      socket.emit("chat-message", data)
+      setText("");
     } catch (error) {
       console.log(error)
     }
@@ -79,6 +84,15 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
 
   useEffect(() => {
     getAllMsgs();
+  }, [])
+
+  useEffect(() => {
+    const socket = getSocket();
+    socket.on("chat-message", (data) => {
+      setMessages(prev => [...prev, data])
+    })
+
+    return () => { socket.off("chat-message") }
   }, [])
 
   return (
@@ -137,6 +151,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
           })
         )}
       </div>
+
 
       <AnimatePresence>
         {showAI && messages.length > 0 && (
