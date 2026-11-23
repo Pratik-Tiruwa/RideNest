@@ -89,17 +89,20 @@ function RideChat({ currentRole, bookingId, userName, driverName }: any) {
   }
 
   useEffect(() => {
+    if (!bookingId) return;
     getAllMsgs();
-  }, [])
+  }, [bookingId])
 
   useEffect(() => {
     const socket = getSocket();
-    socket.on("chat-message", (data) => {
+    socket.emit("join-ride", bookingId);
+    const onMsg = (data: any) => {
       setMessages(prev => [...prev, data])
-    })
+    }
+    socket.on("chat-message", onMsg)
 
-    return () => { socket.off("chat-message") }
-  }, [])
+    return () => { socket.off("chat-message", onMsg) }
+  }, [bookingId])
 
   return (
     <div className='flex flex-col h-full min-h-0 bg-white rounded-2xl overflow-hidden border border-zinc-100'>
