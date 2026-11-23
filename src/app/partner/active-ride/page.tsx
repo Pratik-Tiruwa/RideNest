@@ -3,8 +3,8 @@ import dynamic from 'next/dynamic'
 import { BookingStatus, IBooking, PaymentStatus } from '@/models/booking.model'
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
-import { motion } from "motion/react"
-import { ChevronUp, Zap } from 'lucide-react'
+import { AnimatePresence, motion } from "motion/react"
+import { ArrowRight, ChevronUp, MapPin, Zap } from 'lucide-react'
 import PanelContent from '@/components/PanelContent'
 import { stat } from 'fs'
 import { FcPrevious } from 'react-icons/fc'
@@ -86,6 +86,58 @@ function page() {
     const [chatOpen, setChatOpen] = useState(false)
     const [expanded, setExpanded] = useState(false)
 
+    const [otpMode, setOtpMode] = useState(false);
+    const [otp, setOtp] = useState("");
+    const [loadingPickupOtp, setLoadingPickupOtp] = useState(false);
+    const [otpVerified, setOtpVerified] = useState(false);
+    const [pickupOtpError, setPickupOtpError] = useState("");
+
+    const [dropOtpMode, setDropOtpMode] = useState(false);
+    const [dropOtp, setDropOtp] = useState("");
+    const [loadingDropOtp, setLoadingDropOtp] = useState(false);
+    const [dropOtpError, setDropOtpError] = useState("");
+
+    const handleSendPickUpOtp = async () => {
+        try {
+            const { data } = await axios.post("/api/partner/bookings/otp/pickup/send", { bookingId: booking?._id })
+            console.log(data)
+            setOtpMode(true)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
+    const handleSendDropOtp = async () => {
+        try {
+            const { data } = await axios.post("/api/partner/bookings/otp/drop/send", { bookingId: booking?._id })
+            console.log(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const handleVerifyPickUpOtp = async () => {
+        try {
+            const { data } = await axios.post("/api/partner/bookings/otp/pickup/verify", { bookingId: booking?._id, otp })
+            console.log(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const handleVerifyDropOtp = async () => {
+        try {
+            const { data } = await axios.post("/api/partner/bookings/otp/drop/verify", { bookingId: booking?._id, otp })
+            console.log(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
+
+
     useEffect(() => {
         async function fetch() {
             setLoading(true)
@@ -152,7 +204,7 @@ function page() {
         };
 
         socket.on("driver-location", handleDriverLocation);
-        return () => { 
+        return () => {
             socket.off("join-ride");
             socket.off("driver-location", handleDriverLocation);
         };
@@ -223,6 +275,8 @@ function page() {
 
             </div>
 
+
+            {/* Desktop */}
             <motion.div
                 initial={{ x: 60, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
@@ -248,6 +302,7 @@ function page() {
                 </div>
             </motion.div>
 
+            {/* Mobile View */}
             <div className='lg:hidden fixed bottom-0 left-0 right-0 z-20 pointer-events-none'>
 
                 <motion.div
@@ -299,6 +354,26 @@ function page() {
 
                     <div className='flex-1 overflow-y-auto min-h-0 pb-6'>
                         <PanelContent {...panelProps} />
+                    </div>
+
+
+                    <div className='shrink-0 border-t border-zinc-100 bg-white px-5 py-4'>
+                        <AnimatePresence>
+                            {status === "confirmed" && !otpMode && !otpVerified && (
+                                <motion.button
+                                    key="arrived"
+                                    onClick={() => {
+                                        handleSendPickUpOtp()
+                                    }}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    className='w-full bg-zinc-900 hover:bg-zinc-800 active:scale-[0.97] text-white py-4 rounded-2xl font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-2'
+                                >
+                                    <MapPin size={16} /> I've Arrived at Pickup <ArrowRight size={15} className='ml-1' />
+                                </motion.button>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                 </motion.div>
