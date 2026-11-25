@@ -11,6 +11,7 @@ import { FcPrevious } from 'react-icons/fc'
 import { useParams } from 'next/navigation'
 import { getSocket } from '@/lib/socket'
 import { setDriver } from 'mongoose'
+import CompletedScreen from '@/components/CompletedScreen'
 
 const LiveRideMap = dynamic(() => import("@/components/LiveRideMap"), {
     ssr: false
@@ -119,15 +120,15 @@ function page() {
         if (!id) return;
         const socket = getSocket();
         socket.emit("join-ride", id);
-        socket.on("driver-location", (data: any, maybeLon?: any) => { 
+        socket.on("driver-location", (data: any, maybeLon?: any) => {
             if (typeof data === "object" && data !== null && typeof data.latitude === "number") {
                 setDriverPos([data.latitude, data.longitude])
             } else if (typeof data === "number" && typeof maybeLon === "number") {
                 setDriverPos([data, maybeLon])
             }
         })
-        return () => { 
-            socket.off("join-ride") 
+        return () => {
+            socket.off("join-ride")
             socket.off("driver-location")
         }
     }, [id])
@@ -155,6 +156,12 @@ function page() {
                     <p className='text-white/40 text-sm max-w-sm'>Could not find this ride or booking details.</p>
                 </div>
             </div>
+        )
+    }
+
+    if (status === "completed" && booking) {
+        return (
+            <CompletedScreen booking={booking} role='user' />
         )
     }
 
