@@ -9,6 +9,7 @@ import PanelContent from '@/components/PanelContent'
 import { stat } from 'fs'
 import { FcPrevious } from 'react-icons/fc'
 import { getSocket } from '@/lib/socket'
+import CompletedScreen from '@/components/CompletedScreen'
 
 const LiveRideMap = dynamic(() => import("@/components/LiveRideMap"), {
     ssr: false
@@ -243,6 +244,12 @@ function page() {
                     <p className='text-white/40 text-sm max-w-sm'>You currently do not have any active ride in progress.</p>
                 </div>
             </div>
+        )
+    } 
+
+    if(status === "completed" && booking) { 
+        return ( 
+            <CompletedScreen booking={booking} role='driver' />
         )
     }
 
