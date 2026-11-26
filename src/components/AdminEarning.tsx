@@ -1,8 +1,113 @@
-import React from 'react'
+'use client'
+import axios from 'axios'
+import { BarChart2, Star, TrendingDown, TrendingUp, Zap } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { motion } from "motion/react"
+
+type Earning = {
+  type: string,
+  earnings: number,
+  date: Date
+}
 
 function AdminEarning() {
+  const [earningData, setEarningData] = useState<Earning[]>([])
+
+  useEffect(() => {
+    const fetchEarning = async () => {
+      try {
+        const { data } = await axios.get("/api/admin/earning")
+        const last7DaysData: Earning[] = data.slice(-7)
+        setEarningData(last7DaysData)
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    fetchEarning()
+  }, [])
+
+  const total = earningData.reduce((a, d) => a + d.earnings, 0)
+  const avg = earningData.length ? Math.round(total / earningData.length) : 0
+  const maxEarn = earningData.length ? Math.max(...earningData.map((d) => d.earnings)) : 0
+  const bestDay = earningData.find(d => d.earnings === maxEarn)
+  const todayEarn = earningData[earningData.length - 1]
+  const yesterdayEarn = earningData[earningData.length - 2]
+  const deltaEarn = todayEarn && yesterdayEarn ? todayEarn.earnings - yesterdayEarn.earnings : 0
+  const deltaEarnPositive = deltaEarn >= 0
+  const deltaEarnPercent = yesterdayEarn ? Math.abs(Math.round((deltaEarn / yesterdayEarn.earnings) * 100)) : 0
+
+  const fmt = (n: number) => {
+    return "₹" + n.toLocaleString()
+  }
+
+  const metrics = [
+    {
+      label: "Best Day",
+      value: fmt(maxEarn),
+      sub: bestDay?.date ?? "-",
+      icon: <Star size={14} />,
+      color: "text-violet-600",
+      bg: "bg-violet-50"
+    },
+    {
+      label: "Daily Avg",
+      value: fmt(avg),
+      sub: "per day",
+      icon: <BarChart2 size={14} />,
+      color: "text-blue-600",
+      bg: "bg-blue-50"
+    },
+    {
+      label: "Today",
+      value: todayEarn ? fmt(todayEarn.earnings) : "-",
+      sub: todayEarn && yesterdayEarn
+        ? `${deltaEarnPositive ? "+" : ""} ${fmt(deltaEarn)} vs yesterday` : "-",
+      icon: <Zap size={14} />,
+      color: "text-emerald-600",
+      bg: "bg-emerald-50"
+    }
+  ]
+
   return (
-    <div></div>
+    <div className='bg-white rounded-3xl border border-gray-100 shadow-sm p-6 w-full'>
+
+      <div className='flex items-start justify-between mb-6 flex-wrap gap-4'>
+        <div>
+          <span className='inline-block text-[11px] font-semibold tracking-widest uppercase text-blue-600 bg-blue-50 px-3 py-1 rounded-full mb-2'>
+            Admin Dashboard
+          </span>
+          <h2 className='text-xl font-bold text-gray-900 tracking-tight'>
+            Daily Earnings</h2>
+          <p className='text-sm text-gray-400 mt-0.5'>Last 7 days performance</p>
+        </div>
+
+        <div className='text-right'>
+          <p className='text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-1'>
+            Weekly Total
+          </p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className='text-3xl font-bold text-gray-900 font-mono tracking-tight'
+          >
+            {fmt(total)}
+          </motion.div> 
+
+          <div className={`flex items-center justify-end gap-1 text-xs font-semoibold mt-1
+            ${
+              deltaEarnPositive ? "text-emerald-600" : "text-rose-500"
+            }`}>
+              {deltaEarnPositive ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+              <span>{deltaEarnPercent} % vs yesterday</span>
+          </div>
+
+
+        </div>
+
+      </div>
+
+    </div>
   )
 }
 
