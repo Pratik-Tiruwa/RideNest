@@ -5,9 +5,8 @@ import React, { useEffect, useState } from 'react'
 import { motion } from "motion/react"
 
 type Earning = {
-  type: string,
   earnings: number,
-  date: Date
+  date: string
 }
 
 function AdminEarning() {
@@ -105,6 +104,26 @@ function AdminEarning() {
 
         </div>
 
+      </div>
+
+      <div className='grid grid-cols-3 gap-3 mb-6'>
+          {metrics.map((m,i) => ( 
+            <motion.div
+            initial={{opacity: 0, y:2}}
+            animate={{opacity:1, y:0}}
+            transition={{delay: i * 0.07, duration: 0.4}}
+            className='bg-gray-50 rounded-2xl p-4'
+            >
+
+              <div className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-2 ${m.color}`}>
+                <span className={`${m.bg} p-1 rounded-lg ${m.color}`}>{m.icon}</span>
+                {m.label}
+              </div> 
+
+              <p className='text-lg font-bold text-gray-900 font-mono leading-none'>{m.value}</p>
+              <p className='text-[11px] text-gray-400 mt-1'>{m.sub}</p>
+            </motion.div>
+          ))}
       </div>
 
     </div>
