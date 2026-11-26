@@ -229,7 +229,7 @@ function Navbar() {
                   if (i == "Home") {
                     href = "/"
                   } else {
-                    href = `/${i.toLowerCase()}`
+                    href = `/user/${i.toLowerCase()}`
                   }
 
                   return <Link key={index} href={href} className="px-6 py-4 text-gray-300 hover:bg-white/5">{i}</Link>
