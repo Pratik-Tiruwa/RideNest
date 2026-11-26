@@ -39,9 +39,9 @@ function AdminDashboard() {
         }
     }
 
-    const handleGetPendingKyc = async() => { 
+    const handleGetPendingKyc = async () => {
         try {
-            const {data} = await axios.get("/api/admin/video-kyc/pending")
+            const { data } = await axios.get("/api/admin/video-kyc/pending")
             setPendingKyc(data)
         } catch (error) {
             console.log(error)
@@ -138,9 +138,9 @@ function AdminDashboard() {
 
                 </AnimatePresence>
 
+                <AdminEarning />
             </main>
 
-            <AdminEarning />
 
         </div>
     )
