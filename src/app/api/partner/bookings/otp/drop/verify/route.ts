@@ -44,6 +44,8 @@ export async function POST(req: NextRequest) {
             booking.partnerAmount = partnerAmount
         }
 
+        booking.paymentStatus = "paid"
+
         booking.bookingStatus = "completed";
         booking.dropOtp = ""
         booking.dropOtpExpires = undefined;
