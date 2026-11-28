@@ -41,6 +41,17 @@ function Navbar() {
     }
   }
 
+  const scrollToContact = (e:React.MouseEvent) => { 
+    if(pathName === "/") { 
+      e.preventDefault();
+
+      const footer = document.getElementById("contact");
+      if(footer) { 
+        footer.scrollIntoView({behavior : "smooth"});
+      }
+    }
+  }
+
   const fetchCount = async () => {
     try {
       const { data } = await axios.get("/api/partner/bookings/pending-requests-count")
@@ -106,14 +117,22 @@ function Navbar() {
                 let href;
                 if (i == "Home") {
                   href = "/"
-                } else {
+                } else if(i === "Contact") { 
+                  href = "/#contact"
+                } 
+                else {
                   href = `/user/${i.toLowerCase()}`
                 }
                 const active = href === pathName
                 return <Link
                   key={index}
                   href={href}
-                  onClick={i === "Home" ? scrollToTop : undefined}
+                  onClick={(e) => {
+                    if(i === "Home")
+                      scrollToTop();
+                    if(i === "Contact")
+                      scrollToContact(e);
+                  }}
                   className={`
             text-sm font-medium pl-2 transition 
             ${active
@@ -253,7 +272,12 @@ function Navbar() {
                     <div className='flex flex-col gap-4'>
                       <Link className='relative text-md font-medium text-black hover:text-gray-500 transition' href={"/user/bookings"}>Bookings </Link>
                       <Link className='relative text-md font-medium text-black hover:text-gray-500 transition' href={"/"}>About Us </Link>
-                      <Link className='relative text-md font-medium text-black hover:text-gray-500 transition' href={"/"}>Contact </Link>
+                      <Link 
+                      onClick={(e) => { 
+                        scrollToContact(e); 
+                        setProfileOpen(false);
+                      }}
+                      className='relative text-md font-medium text-black hover:text-gray-500 transition' href={"/#contact"}>Contact </Link>
                     </div>
                   </>
 
