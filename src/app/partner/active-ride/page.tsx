@@ -4,12 +4,11 @@ import { BookingStatus, IBooking, PaymentStatus } from '@/models/booking.model'
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from "motion/react"
-import { ArrowRight, ChevronUp, KeyRound, MapPin, Navigation, Zap } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ChevronUp, KeyRound, MapPin, Navigation, Zap } from 'lucide-react'
 import PanelContent from '@/components/PanelContent'
-import { stat } from 'fs'
-import { FcPrevious } from 'react-icons/fc'
 import { getSocket } from '@/lib/socket'
 import CompletedScreen from '@/components/CompletedScreen'
+import { useRouter } from 'next/navigation'
 
 const LiveRideMap = dynamic(() => import("@/components/LiveRideMap"), {
     ssr: false
@@ -74,6 +73,7 @@ const PAYMENT_BADGE: Record<PaymentStatus, { label: string, cls: string }> = {
 
 function page() {
 
+    const router = useRouter()
     const [booking, setBooking] = useState<IBooking | null>(null)
     const [loading, setLoading] = useState(true)
     const [driverPos, setDriverPos] = useState<[number, number] | null>(null)
@@ -238,17 +238,30 @@ function page() {
 
     if (!booking || !pickUpPos || !dropPos) {
         return (
-            <div className='h-screen w-full bg-zinc-950 flex items-center justify-center'>
+            <div className='h-screen w-full bg-zinc-950 flex items-center justify-center relative'>
+                <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => router.push("/")}
+                    className='absolute top-5 left-5 z-50 flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-white px-4 py-2 rounded-xl text-sm font-semibold transition border border-zinc-800 shadow-lg cursor-pointer'
+                >
+                    <ArrowLeft size={16} /> Back to Home
+                </motion.button>
                 <div className='flex flex-col items-center gap-3 text-center px-4'>
                     <p className='text-white/80 text-lg font-semibold'>No Active Ride Found</p>
                     <p className='text-white/40 text-sm max-w-sm'>You currently do not have any active ride in progress.</p>
+                    <button
+                        onClick={() => router.push("/")}
+                        className='mt-3 inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white text-zinc-900 font-semibold text-sm hover:bg-zinc-100 transition-all active:scale-[0.98] cursor-pointer'
+                    >
+                        <ArrowLeft size={16} /> Back to Home
+                    </button>
                 </div>
             </div>
         )
-    } 
+    }
 
-    if(status === "completed" && booking) { 
-        return ( 
+    if (status === "completed" && booking) {
+        return (
             <CompletedScreen booking={booking} role='driver' />
         )
     }
@@ -263,8 +276,18 @@ function page() {
 
 
     return (
-        <div className='h-screen w-full bg-zinc-100 flex flex-col lg:flex-row overflow-hidden'>
+        <div className='h-screen w-full bg-zinc-100 flex flex-col lg:flex-row overflow-hidden relative'>
             <div className='relative flex-1 h-full z-0'>
+                {/* Top-Left Back Button */}
+                <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => router.push("/")}
+                    className='absolute top-4 left-4 z-[500] flex items-center gap-2 bg-white/95 backdrop-blur-sm hover:bg-white text-zinc-900 px-3.5 py-2 rounded-full shadow-lg border border-zinc-200 text-sm font-semibold transition cursor-pointer'
+                >
+                    <ArrowLeft size={16} />
+                    <span>Back to Home</span>
+                </motion.button>
+
                 <LiveRideMap
                     driverLocation={driverPos}
                     pickUpLocation={pickUpPos}
@@ -283,14 +306,19 @@ function page() {
                     initial={{ opacity: 0, y: -16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.5 }}
-                    className='absolute top-4 left-1/2 -translate-x-1/2 z-500 pointer-events-none'
+                    className='absolute top-4 left-1/2 -translate-x-1/2 z-500 flex items-center gap-2'
                 >
+                    <button
+                        onClick={() => router.push("/")}
+                        className='flex items-center gap-1.5 bg-white/95 backdrop-blur-sm hover:bg-white text-zinc-900 px-3.5 py-2 rounded-full shadow-lg border border-zinc-100 text-xs font-semibold transition cursor-pointer'
+                    >
+                        <ArrowLeft size={14} /> Back to Home
+                    </button>
 
                     <div className='flex items-center gap-2 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-zinc-100'>
                         <span className={`w-2 h-2 rounded-full ${cfg.dot} animate-pulse`} />
                         <span className='text-xs font-semibold tracking-wide text-zinc-900'>{cfg.label}</span>
                     </div>
-
 
                 </motion.div>
 

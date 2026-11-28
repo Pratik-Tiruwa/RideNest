@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { motion } from "motion/react"
 import axios from 'axios'
 import { BookingStatus, PaymentStatus } from '@/models/booking.model'
-import { Clock, IndianRupee, Loader2, MapPin, Navigation } from 'lucide-react'
+import { ArrowLeft, Clock, IndianRupee, Loader2, MapPin, Navigation } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { getSocket } from '@/lib/socket'
 
@@ -103,8 +103,20 @@ function page() {
 
             <div className='bg-white border-b border-gray-200'>
                 <div className='max-w-6xl mx-auto px-6 py-6'>
-                    <h1 className='text-4xl font-semibold text-gray-900'>Ride Requests</h1>
-                    <p className='mt-3 text-gray-500 text-lg'>Manage incoming ride requests and respond in real time</p>
+                    <div className='flex items-center gap-4'>
+                        <motion.button
+                            whileTap={{ scale: 0.92 }}
+                            onClick={() => router.push("/")}
+                            className='w-11 h-11 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition shrink-0'
+                            title='Back to Home'
+                        >
+                            <ArrowLeft className='w-5 h-5' />
+                        </motion.button>
+                        <div>
+                            <h1 className='text-3xl md:text-4xl font-semibold text-gray-900'>Ride Requests</h1>
+                            <p className='mt-1 text-gray-500 text-base md:text-lg'>Manage incoming ride requests and respond in real time</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -117,6 +129,13 @@ function page() {
                 ) : bookings.length == 0 ? (
                     <div className='bg-white rounded-2xl border border-gray-200 p-16 text-center shadow-sm'>
                         <p className='text-gray-500 text-lg'>No pending ride requests.</p>
+                        <button
+                            onClick={() => router.push("/")}
+                            className='mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition cursor-pointer'
+                        >
+                            <ArrowLeft className='w-4 h-4' />
+                            Back to Home
+                        </button>
                     </div>
                 ) : (
                     <div className='space-y-6'>
