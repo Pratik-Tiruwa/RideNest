@@ -35,6 +35,12 @@ function Navbar() {
     setProfileOpen(false)
   }
 
+  const scrollToTop = () => {
+    if (pathName === "/") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
   const fetchCount = async () => {
     try {
       const { data } = await axios.get("/api/partner/bookings/pending-requests-count")
@@ -86,7 +92,9 @@ function Navbar() {
 
             {userData?.role == "partner" ? (
               <>
-                <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/"}>Home</Link>
+                <Link
+                  onClick={scrollToTop}
+                  className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/"}>Home</Link>
                 <Link className='relative text-sm font-medium text-gray-300 hover:text-white transition' href={"/partner/pending-requests"}>Pending Requests
                   <span className='absolute -top-2 -right-5.5 w-6 h-6 bg-white text-black text-xs rounded-full flex items-center justify-center font-bold'>{pendingCount ?? 0}</span>
                 </Link>
@@ -102,7 +110,11 @@ function Navbar() {
                   href = `/user/${i.toLowerCase()}`
                 }
                 const active = href === pathName
-                return <Link key={index} href={href} className={`
+                return <Link 
+                key={index} 
+                href={href} 
+                onClick={i === "Home" ? scrollToTop : undefined}
+                className={`
             text-sm font-medium pl-2 transition 
             ${active
                     ? "text-white"
