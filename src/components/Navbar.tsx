@@ -35,19 +35,30 @@ function Navbar() {
     setProfileOpen(false)
   }
 
+  const scrollToSection = (id: string, e?: React.MouseEvent) => {
+    if (pathName === "/") {
+      if (e) e.preventDefault();
+
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" })
+      }
+    }
+  }
+
   const scrollToTop = () => {
     if (pathName === "/") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
 
-  const scrollToContact = (e:React.MouseEvent) => { 
-    if(pathName === "/") { 
+  const scrollToContact = (e: React.MouseEvent) => {
+    if (pathName === "/") {
       e.preventDefault();
 
       const footer = document.getElementById("contact");
-      if(footer) { 
-        footer.scrollIntoView({behavior : "smooth"});
+      if (footer) {
+        footer.scrollIntoView({ behavior: "smooth" });
       }
     }
   }
@@ -117,9 +128,12 @@ function Navbar() {
                 let href;
                 if (i == "Home") {
                   href = "/"
-                } else if(i === "Contact") { 
+                } else if (i === "About Us") {
+                  href = "/#about";
+                }
+                else if (i === "Contact") {
                   href = "/#contact"
-                } 
+                }
                 else {
                   href = `/user/${i.toLowerCase()}`
                 }
@@ -128,9 +142,11 @@ function Navbar() {
                   key={index}
                   href={href}
                   onClick={(e) => {
-                    if(i === "Home")
+                    if (i === "Home")
                       scrollToTop();
-                    if(i === "Contact")
+                    if (i === "About Us")
+                      scrollToSection("about", e)
+                    if (i === "Contact")
                       scrollToContact(e);
                   }}
                   className={`
@@ -271,13 +287,18 @@ function Navbar() {
 
                     <div className='flex flex-col gap-4'>
                       <Link className='relative text-md font-medium text-black hover:text-gray-500 transition' href={"/user/bookings"}>Bookings </Link>
-                      <Link className='relative text-md font-medium text-black hover:text-gray-500 transition' href={"/"}>About Us </Link>
-                      <Link 
-                      onClick={(e) => { 
-                        scrollToContact(e); 
-                        setProfileOpen(false);
-                      }}
-                      className='relative text-md font-medium text-black hover:text-gray-500 transition' href={"/#contact"}>Contact </Link>
+                      <Link
+                        onClick={(e) => {
+                          scrollToSection("about", e);
+                          setProfileOpen(false);
+                        }}
+                        className='relative text-md font-medium text-black hover:text-gray-500 transition' href={"/#about"}>About Us </Link>
+                      <Link
+                        onClick={(e) => {
+                          scrollToContact(e);
+                          setProfileOpen(false);
+                        }}
+                        className='relative text-md font-medium text-black hover:text-gray-500 transition' href={"/#contact"}>Contact </Link>
                     </div>
                   </>
 
