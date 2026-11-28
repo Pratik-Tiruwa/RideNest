@@ -4,6 +4,8 @@ import { IUser } from "@/models/user.model";
 import { IVehicle } from "@/models/vehicle.model";
 import axios from "axios";
 import {
+    ArrowLeft,
+    ArrowRight,
     Bike,
     Calendar,
     Car,
@@ -135,12 +137,19 @@ function page() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="max-w-3xl mx-auto py-6">
                         <div className="flex items-center gap-3">
+                            <motion.button
+                            whileTap={{scale:0.92}}
+                            onClick={() => router.push("/")}
+                            className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition shrink-0"
+                            >
+                                    <ArrowLeft className='w-5 h-5' />
+                            </motion.button>
                             <div className="bg-blue-100 p-2 rounded-lg">
                                 <Car className="w-5 h-5 text-blue-600" />
                             </div>
                             <div>
                                 <h1 className="text-2xl font-semibold text-gray-900">
-                                    My Bookings
+                                   My Bookings
                                 </h1>
                                 <p className="text-gray-500 text-sm mt-1">
                                     {bookings.length} {bookings.length === 1 ? "ride" : "rides"}{" "}
