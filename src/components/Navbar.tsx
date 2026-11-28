@@ -110,16 +110,16 @@ function Navbar() {
                   href = `/user/${i.toLowerCase()}`
                 }
                 const active = href === pathName
-                return <Link 
-                key={index} 
-                href={href} 
-                onClick={i === "Home" ? scrollToTop : undefined}
-                className={`
+                return <Link
+                  key={index}
+                  href={href}
+                  onClick={i === "Home" ? scrollToTop : undefined}
+                  className={`
             text-sm font-medium pl-2 transition 
             ${active
-                    ? "text-white"
-                    : "text-gray-400 hover:text-white"
-                  }
+                      ? "text-white"
+                      : "text-gray-400 hover:text-white"
+                    }
             `}>{i}</Link>
               })
             }
@@ -233,19 +233,30 @@ function Navbar() {
                 <p className='text-lg font-semibold'>{userData.name}</p>
                 <p className='text-xs uppercase text-gray-500 mb-4'>{userData.role}</p>
                 {userData.role != "partner" && (
-                  <div className='w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-xl' onClick={() => router.push("/partner/onboarding/vehicle")}>
-                    <div className='flex space-x-2'>
+                  <>
+                    <div className='w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-xl' onClick={() => router.push("/partner/onboarding/vehicle")}>
+                      <div className='flex space-x-2'>
 
-                      <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Bike size={16} /> </div>
-                      <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Car size={16} /> </div>
-                      <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Truck size={16} /> </div>
+                        <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Bike size={16} /> </div>
+                        <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Car size={16} /> </div>
+                        <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Truck size={16} /> </div>
+
+
+                      </div>
+
+                      Become a Partner
+                      <ChevronRight size={16} className='ml-auto' />
 
 
                     </div>
 
-                    Become a Partner
-                    <ChevronRight size={16} className='ml-auto' />
-                  </div>
+                    <div className='flex flex-col gap-4'>
+                      <Link className='relative text-md font-medium text-black hover:text-gray-500 transition' href={"/user/bookings"}>Bookings </Link>
+                      <Link className='relative text-md font-medium text-black hover:text-gray-500 transition' href={"/"}>About Us </Link>
+                      <Link className='relative text-md font-medium text-black hover:text-gray-500 transition' href={"/"}>Contact </Link>
+                    </div>
+                  </>
+
                 )
                 }
 
